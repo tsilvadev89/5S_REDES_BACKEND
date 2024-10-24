@@ -1,11 +1,15 @@
 const express = require('express');
+const userRoutes = require('./routes/userRoutes');
+require('dotenv').config();
+
 const app = express();
-const port = 3000;
+app.use(express.json());  // Middleware para lidar com JSON
 
-app.get('/', (req, res) => {
-  res.send('Hello World');
-});
+// Rotas de usuários
+app.use('/api', userRoutes);
 
-app.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
+// Inicia o servidor na porta 3000
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
