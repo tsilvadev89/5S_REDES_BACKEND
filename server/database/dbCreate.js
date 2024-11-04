@@ -5,11 +5,11 @@ const { exec } = require('child_process');
 
 // Configuração do banco de dados
 const dbConfig = {
-  host: 'localhost',
-  user: 'fatec',
-  password: 'fatec',
-  database: 'salao_beleza',
-  connectionLimit: 5,
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'fatec',
+  password: process.env.DB_PASSWORD || 'fatec',
+  database: process.env.DB_NAME || 'salao_beleza',
+  connectionLimit: 5
 };
 
 console.log(dbConfig);

@@ -13,12 +13,16 @@ const pool = mariadb.createPool({
 
 // Pool de conexões
 const pool = mariadb.createPool({
-  host: 'localhost',                // Host do MariaDB
-  user: 'fatec',                    // Usuário do banco
-  password: 'fatec',                // Senha
-  database: 'salao_beleza',         // Nome do banco de dados
-  connectionLimit: 5                // Limite de conexões simultâneas
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'fatec',
+  password: process.env.DB_PASSWORD || 'fatec',
+  database: process.env.DB_NAME || 'salao_beleza',
+  connectionLimit: 5
 });
+
+const dbConfig = {
+
+};
 
 
 module.exports = pool;

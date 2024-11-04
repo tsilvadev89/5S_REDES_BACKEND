@@ -8,7 +8,7 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: development
-      DB_HOST: db
+      DB_HOST: db        # Nome do serviço para MariaDB
       DB_USER: fatec
       DB_PASSWORD: fatec
       DB_NAME: salao_beleza
