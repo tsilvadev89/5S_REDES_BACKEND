@@ -3,18 +3,20 @@ require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const mysql = require('mysql2/promise');
 const { exec } = require('child_process');
 
+// Configuração do banco de dados
 const dbConfig = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  host: 'localhost',
+  user: 'fatec',
+  password: 'fatec',
+  database: 'salao_beleza',
+  connectionLimit: 5,
 };
 
 console.log(dbConfig);
 
 function runPopulateScript() {
   return new Promise((resolve, reject) => {
-    exec('node populate_data.js', (error, stdout, stderr) => {
+    exec('node ./database/populate_data.js', (error, stdout, stderr) => {
       if (error) {
         console.error(`Erro ao executar o script de população: ${error.message}`);
         return reject(error);
@@ -38,9 +40,19 @@ async function createDatabaseAndTables() {
   });
 
   try {
+    // Verifica se o banco de dados já existe
+    const [databases] = await connection.query(`SHOW DATABASES LIKE '${dbConfig.database}'`);
+    
+    if (databases.length > 0) {
+      console.log('Banco de dados já existe. Pulando criação e execução do script de população.');
+      return; // Termina a função se o banco já existir
+    }
+
+    // Criação do banco e tabelas se o banco não existir
     await connection.query(`CREATE DATABASE IF NOT EXISTS ${dbConfig.database}`);
     await connection.query(`USE ${dbConfig.database}`);
 
+    // Criação das tabelas (todas com InnoDB)
     await connection.query(`
       CREATE TABLE IF NOT EXISTS cargos (
         cargo_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -177,6 +189,7 @@ async function createDatabaseAndTables() {
 
     console.log('Tabelas criadas com sucesso.');
 
+    // Executa o script de população após criação das tabelas
     await runPopulateScript();
 
   } catch (error) {
@@ -187,4 +200,4 @@ async function createDatabaseAndTables() {
   }
 }
 
-createDatabaseAndTables();
+module.exports = createDatabaseAndTables;

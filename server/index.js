@@ -1,6 +1,6 @@
 const express = require('express');
 require('dotenv').config();
-const createDatabaseAndTables = require('./database/dbCreate'); // Importa a função de criação do banco
+const createDatabaseAndTables = require('./database/dbCreate'); 
 
 const clienteRoutes = require('./routes/clienteRoutes');
 const funcionarioRoutes = require('./routes/funcionarioRoutes');

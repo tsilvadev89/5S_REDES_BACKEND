@@ -4,10 +4,11 @@ const mysql = require('mysql2/promise');
 
 // Configuração da conexão com o banco de dados usando variáveis de ambiente
 const dbConfig = {
-  host: process.env.DB_HOST,
-  user: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  host: 'localhost',                // Host do MariaDB
+  user: 'fatec',                    // Usuário do banco
+  password: 'fatec',                // Senha
+  database: 'salao_beleza',         // Nome do banco de dados
+  connectionLimit: 5                // Limite de conexões simultâneas
 };
 
 async function populateData() {
