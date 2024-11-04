@@ -8,5 +8,19 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: development
-    volumes:
-      - /home/thiago/code/5S_REDES_BACKEND/server:/usr/src/app
+      DB_HOST: db
+      DB_USER: fatec
+      DB_PASSWORD: fatec
+      DB_NAME: salao_beleza
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:latest
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: salao_beleza
+      MYSQL_USER: fatec
+      MYSQL_PASSWORD: fatec
