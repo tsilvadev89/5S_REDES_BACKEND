@@ -32,12 +32,31 @@ function runPopulateScript() {
   });
 }
 
-async function createDatabaseAndTables() {
-  const connection = await mysql.createConnection({
-    host: dbConfig.host,
-    user: dbConfig.user,
-    password: dbConfig.password,
-  });
+async function createDatabaseAndTables(retries = 5, delay = 5000) {
+  let connection;
+
+  while (retries > 0) {
+    try {
+      // Tenta estabelecer a conexão com o banco de dados
+      connection = await mysql.createConnection({
+        host: dbConfig.host,
+        user: dbConfig.user,
+        password: dbConfig.password,
+      });
+
+      console.log('Conexão com o banco de dados estabelecida.');
+      break; // Sai do loop se a conexão for bem-sucedida
+    } catch (error) {
+      console.error(`Erro ao conectar ao banco de dados: ${error.message}`);
+      retries -= 1;
+      console.log(`Tentando novamente em ${delay / 1000} segundos... (${retries} tentativas restantes)`);
+      await new Promise(res => setTimeout(res, delay));
+    }
+  }
+
+  if (!connection) {
+    throw new Error('Não foi possível conectar ao banco de dados após múltiplas tentativas.');
+  }
 
   try {
     // Verifica se o banco de dados já existe e o remove
