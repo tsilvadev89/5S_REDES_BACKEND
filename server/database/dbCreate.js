@@ -40,16 +40,16 @@ async function createDatabaseAndTables() {
   });
 
   try {
-    // Verifica se o banco de dados já existe
+    // Verifica se o banco de dados já existe e o remove
     const [databases] = await connection.query(`SHOW DATABASES LIKE '${dbConfig.database}'`);
     
     if (databases.length > 0) {
-      console.log('Banco de dados já existe. Pulando criação e execução do script de população.');
-      return; // Termina a função se o banco já existir
+      console.log('Banco de dados já existe. Excluindo antes de recriar...');
+      await connection.query(`DROP DATABASE ${dbConfig.database}`);
     }
 
-    // Criação do banco e tabelas se o banco não existir
-    await connection.query(`CREATE DATABASE IF NOT EXISTS ${dbConfig.database}`);
+    // Criação do banco e tabelas
+    await connection.query(`CREATE DATABASE ${dbConfig.database}`);
     await connection.query(`USE ${dbConfig.database}`);
 
     // Criação das tabelas (todas com InnoDB)
