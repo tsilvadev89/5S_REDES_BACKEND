@@ -3,12 +3,12 @@ version: '3.8'
 services:
   backend:
     build:
-      context: /home/thiago/code/5S_REDES_BACKEND/server
+      context: .
     ports:
       - "3000:3000"
     environment:
       NODE_ENV: development
-      DB_HOST: db        # Nome do serviço para MariaDB
+      DB_HOST: db  # SERVIÇO DB
       DB_USER: fatec
       DB_PASSWORD: fatec
       DB_NAME: salao_beleza
@@ -24,3 +24,11 @@ services:
       MYSQL_DATABASE: salao_beleza
       MYSQL_USER: fatec
       MYSQL_PASSWORD: fatec
+
+  frontend:
+    build:
+      context: ../../5S_REDES_FRONTEND
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
