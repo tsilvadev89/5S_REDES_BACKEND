@@ -6,8 +6,8 @@ const { exec } = require('child_process');
 // Configuração do banco de dados
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
-  user: process.env.DB_USER || 'fatec',
-  password: process.env.DB_PASSWORD || 'fatec',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || 'C3poqap2p*741137a',
   database: process.env.DB_NAME || 'salao_beleza',
   connectionLimit: 5
 };
@@ -37,7 +37,6 @@ async function createDatabaseAndTables(retries = 5, delay = 5000) {
 
   while (retries > 0) {
     try {
-      // Tenta estabelecer a conexão com o banco de dados
       connection = await mysql.createConnection({
         host: dbConfig.host,
         user: dbConfig.user,
@@ -45,7 +44,7 @@ async function createDatabaseAndTables(retries = 5, delay = 5000) {
       });
 
       console.log('Conexão com o banco de dados estabelecida.');
-      break; // Sai do loop se a conexão for bem-sucedida
+      break;
     } catch (error) {
       console.error(`Erro ao conectar ao banco de dados: ${error.message}`);
       retries -= 1;
@@ -59,7 +58,6 @@ async function createDatabaseAndTables(retries = 5, delay = 5000) {
   }
 
   try {
-    // Verifica se o banco de dados já existe e o remove
     const [databases] = await connection.query(`SHOW DATABASES LIKE '${dbConfig.database}'`);
     
     if (databases.length > 0) {
@@ -67,16 +65,16 @@ async function createDatabaseAndTables(retries = 5, delay = 5000) {
       await connection.query(`DROP DATABASE ${dbConfig.database}`);
     }
 
-    // Criação do banco e tabelas
     await connection.query(`CREATE DATABASE ${dbConfig.database}`);
     await connection.query(`USE ${dbConfig.database}`);
 
-    // Criação das tabelas (todas com InnoDB)
+    // Criação das tabelas
     await connection.query(`
       CREATE TABLE IF NOT EXISTS cargos (
         cargo_id INT AUTO_INCREMENT PRIMARY KEY,
         nome VARCHAR(50),
-        descricao TEXT
+        descricao TEXT,
+        imagem_url VARCHAR(255)
       ) ENGINE=InnoDB
     `);
 
@@ -87,7 +85,8 @@ async function createDatabaseAndTables(retries = 5, delay = 5000) {
         sobrenome VARCHAR(50),
         email VARCHAR(100) UNIQUE,
         data_nascimento DATE,
-        data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        imagem_url VARCHAR(255)
       ) ENGINE=InnoDB
     `);
 
@@ -99,6 +98,7 @@ async function createDatabaseAndTables(retries = 5, delay = 5000) {
         email VARCHAR(100) UNIQUE,
         cargo_id INT,
         data_contratacao DATE,
+        imagem_url VARCHAR(255),
         FOREIGN KEY (cargo_id) REFERENCES cargos(cargo_id)
       ) ENGINE=InnoDB
     `);
@@ -115,6 +115,7 @@ async function createDatabaseAndTables(retries = 5, delay = 5000) {
         cidade VARCHAR(50),
         estado VARCHAR(2),
         cep VARCHAR(10),
+        imagem_url VARCHAR(255),
         CONSTRAINT fk_enderecos_clientes FOREIGN KEY (entidade_id)
           REFERENCES clientes(cliente_id) ON DELETE CASCADE
       ) ENGINE=InnoDB
@@ -124,7 +125,8 @@ async function createDatabaseAndTables(retries = 5, delay = 5000) {
       CREATE TABLE IF NOT EXISTS categorias (
         categoria_id INT AUTO_INCREMENT PRIMARY KEY,
         nome VARCHAR(50),
-        descricao TEXT
+        descricao TEXT,
+        imagem_url VARCHAR(255)
       ) ENGINE=InnoDB
     `);
 
@@ -137,19 +139,12 @@ async function createDatabaseAndTables(retries = 5, delay = 5000) {
         estoque INT,
         categoria_id INT,
         ativo BOOLEAN DEFAULT TRUE,
+        imagem_url VARCHAR(255),
         FOREIGN KEY (categoria_id) REFERENCES categorias(categoria_id)
       ) ENGINE=InnoDB
     `);
 
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS imagens_produtos (
-        imagem_id INT AUTO_INCREMENT PRIMARY KEY,
-        produto_id INT,
-        imagem_url VARCHAR(255),
-        FOREIGN KEY (produto_id) REFERENCES produtos(produto_id)
-      ) ENGINE=InnoDB
-    `);
-
+    // Tabela de serviços com referência obrigatória à categoria
     await connection.query(`
       CREATE TABLE IF NOT EXISTS servicos (
         servico_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -157,16 +152,10 @@ async function createDatabaseAndTables(retries = 5, delay = 5000) {
         descricao TEXT,
         preco DECIMAL(10, 2),
         duracao TIME,
-        ativo BOOLEAN DEFAULT TRUE
-      ) ENGINE=InnoDB
-    `);
-
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS imagens_servicos (
-        imagem_id INT AUTO_INCREMENT PRIMARY KEY,
-        servico_id INT,
+        ativo BOOLEAN DEFAULT TRUE,
         imagem_url VARCHAR(255),
-        FOREIGN KEY (servico_id) REFERENCES servicos(servico_id)
+        categoria_id INT NOT NULL,  -- Campo obrigatório
+        FOREIGN KEY (categoria_id) REFERENCES categorias(categoria_id) ON DELETE CASCADE
       ) ENGINE=InnoDB
     `);
 
@@ -208,7 +197,6 @@ async function createDatabaseAndTables(retries = 5, delay = 5000) {
 
     console.log('Tabelas criadas com sucesso.');
 
-    // Executa o script de população após criação das tabelas
     await runPopulateScript();
 
   } catch (error) {

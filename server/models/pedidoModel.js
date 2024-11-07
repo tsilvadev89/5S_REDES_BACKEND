@@ -1,97 +1,56 @@
-const pool = require('../database/db');
+const db = require('../database/db');
 
-// Função para criar um novo pedido, incluindo os itens do pedido
-async function createPedido({ cliente_id, valor_total, itens }) {
-  const conn = await pool.getConnection();
-  try {
-    await conn.beginTransaction();
-
-    const [result] = await conn.query(
-      'INSERT INTO pedidos (cliente_id, valor_total) VALUES (?, ?)',
-      [cliente_id, valor_total]
-    );
-
-    const pedido_id = result.insertId;
-
-    // Inserir itens do pedido
-    for (const item of itens) {
-      await conn.query(
-        'INSERT INTO itens_pedido (pedido_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)',
-        [pedido_id, item.produto_id, item.quantidade, item.preco_unitario]
-      );
-    }
-
-    await conn.commit();
-    return { pedido_id };
-  } catch (error) {
-    await conn.rollback();
-    throw error;
-  } finally {
-    if (conn) conn.end();
-  }
+// Funções para pedidos
+async function createPedido({ cliente_id, valor_total }) {
+  const [result] = await db.query('INSERT INTO pedidos (cliente_id, valor_total) VALUES (?, ?)', [cliente_id, valor_total]);
+  return { pedido_id: result.insertId, cliente_id, valor_total };
 }
 
-// Função para buscar todos os pedidos
 async function getPedidos() {
-  const conn = await pool.getConnection();
-  try {
-    const [rows] = await conn.query('SELECT * FROM pedidos');
-    return rows;
-  } finally {
-    if (conn) conn.end();
-  }
+  const rows = await db.query('SELECT * FROM pedidos');
+  return rows;
 }
 
-// Função para buscar um pedido por ID
 async function getPedidoById(id) {
-  const conn = await pool.getConnection();
-  try {
-    const [rows] = await conn.query('SELECT * FROM pedidos WHERE pedido_id = ?', [id]);
-    return rows[0];
-  } finally {
-    if (conn) conn.end();
-  }
+  const rows = await db.query('SELECT * FROM pedidos WHERE pedido_id = ?', [id]);
+  return rows;
 }
 
-// Função para atualizar um pedido, incluindo seus itens
-async function updatePedido(id, { cliente_id, valor_total, itens }) {
-  const conn = await pool.getConnection();
-  try {
-    await conn.beginTransaction();
-
-    await conn.query(
-      'UPDATE pedidos SET cliente_id = ?, valor_total = ? WHERE pedido_id = ?',
-      [cliente_id, valor_total, id]
-    );
-
-    await conn.query('DELETE FROM itens_pedido WHERE pedido_id = ?', [id]);
-
-    for (const item of itens) {
-      await conn.query(
-        'INSERT INTO itens_pedido (pedido_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)',
-        [id, item.produto_id, item.quantidade, item.preco_unitario]
-      );
-    }
-
-    await conn.commit();
-    return { pedido_id: id };
-  } catch (error) {
-    await conn.rollback();
-    throw error;
-  } finally {
-    if (conn) conn.end();
-  }
+async function updatePedido(id, { valor_total }) {
+  const [result] = await db.query('UPDATE pedidos SET valor_total = ? WHERE pedido_id = ?', [valor_total, id]);
+  return result.affectedRows > 0;
 }
 
-// Função para excluir um pedido
 async function deletePedido(id) {
-  const conn = await pool.getConnection();
-  try {
-    const result = await conn.query('DELETE FROM pedidos WHERE pedido_id = ?', [id]);
-    return result;
-  } finally {
-    if (conn) conn.end();
-  }
+  const [result] = await db.query('DELETE FROM pedidos WHERE pedido_id = ?', [id]);
+  return result.affectedRows > 0;
+}
+
+// Funções para itens de pedido
+async function getItensPedido(pedidoId) {
+  const rows = await db.query('SELECT * FROM itens_pedido WHERE pedido_id = ?', [pedidoId]);
+  return rows;
+}
+
+async function createItemPedido(pedidoId, { produto_id, quantidade, preco_unitario }) {
+  const [result] = await db.query(
+    'INSERT INTO itens_pedido (pedido_id, produto_id, quantidade, preco_unitario) VALUES (?, ?, ?, ?)',
+    [pedidoId, produto_id, quantidade, preco_unitario]
+  );
+  return { item_id: result.insertId, pedido_id: pedidoId, produto_id, quantidade, preco_unitario };
+}
+
+async function updateItemPedido(itemId, { quantidade, preco_unitario }) {
+  const [result] = await db.query(
+    'UPDATE itens_pedido SET quantidade = ?, preco_unitario = ? WHERE item_id = ?',
+    [quantidade, preco_unitario, itemId]
+  );
+  return result.affectedRows > 0;
+}
+
+async function deleteItemPedido(itemId) {
+  const [result] = await db.query('DELETE FROM itens_pedido WHERE item_id = ?', [itemId]);
+  return result.affectedRows > 0;
 }
 
 module.exports = {
@@ -100,4 +59,8 @@ module.exports = {
   getPedidoById,
   updatePedido,
   deletePedido,
+  getItensPedido,
+  createItemPedido,
+  updateItemPedido,
+  deleteItemPedido,
 };
