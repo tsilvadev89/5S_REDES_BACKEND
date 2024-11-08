@@ -1,76 +1,69 @@
-const cargoModel = require('../models/cargoModel');
+const { Cargo } = require('../models');
 
 // Criar um novo cargo
-async function createCargo(req, res) {
-  const { nome, descricao, imagem_url } = req.body;
+exports.createCargo = async (req, res) => {
   try {
-    const cargo = await cargoModel.createCargo({ nome, descricao, imagem_url });
-    res.status(201).json({ message: 'Cargo criado com sucesso', cargo });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao criar cargo', error: err });
+    const { nome, descricao, imagem_url } = req.body;
+    const cargo = await Cargo.create({ nome, descricao, imagem_url });
+    res.status(201).json(cargo);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao criar cargo', error });
   }
-}
+};
 
 // Obter todos os cargos
-async function getCargos(req, res) {
+exports.getCargos = async (req, res) => {
   try {
-    const cargos = await cargoModel.getCargos();
+    const cargos = await Cargo.findAll();
     res.status(200).json(cargos);
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter cargos', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter cargos', error });
   }
-}
+};
 
 // Obter um cargo por ID
-async function getCargoById(req, res) {
-  const { id } = req.params;
+exports.getCargoById = async (req, res) => {
   try {
-    const cargo = await cargoModel.getCargoById(id);
+    const { id } = req.params;
+    const cargo = await Cargo.findByPk(id);
     if (cargo) {
       res.status(200).json(cargo);
     } else {
       res.status(404).json({ message: 'Cargo não encontrado' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter cargo', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter cargo', error });
   }
-}
+};
 
 // Atualizar um cargo por ID
-async function updateCargo(req, res) {
-  const { id } = req.params;
-  const { nome, descricao, imagem_url } = req.body;
+exports.updateCargo = async (req, res) => {
   try {
-    const updated = await cargoModel.updateCargo(id, { nome, descricao, imagem_url });
+    const { id } = req.params;
+    const { nome, descricao, imagem_url } = req.body;
+    const [updated] = await Cargo.update({ nome, descricao, imagem_url }, { where: { cargo_id: id } });
     if (updated) {
-      res.status(200).json({ message: 'Cargo atualizado com sucesso' });
+      const updatedCargo = await Cargo.findByPk(id);
+      res.status(200).json(updatedCargo);
     } else {
       res.status(404).json({ message: 'Cargo não encontrado' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao atualizar cargo', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao atualizar cargo', error });
   }
-}
+};
 
 // Excluir um cargo por ID
-async function deleteCargo(req, res) {
-  const { id } = req.params;
+exports.deleteCargo = async (req, res) => {
   try {
-    const deleted = await cargoModel.deleteCargo(id);
+    const { id } = req.params;
+    const deleted = await Cargo.destroy({ where: { cargo_id: id } });
     if (deleted) {
-      res.status(200).json({ message: 'Cargo excluído com sucesso' });
+      res.status(204).json();
     } else {
       res.status(404).json({ message: 'Cargo não encontrado' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao excluir cargo', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao excluir cargo', error });
   }
-}
-
-module.exports = {
-  createCargo,
-  getCargos,
-  getCargoById,
-  updateCargo,
-  deleteCargo,
 };

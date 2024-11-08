@@ -1,76 +1,72 @@
-const clienteModel = require('../models/clienteModel');
+const { Cliente } = require('../models');
 
 // Criar um novo cliente
-async function createCliente(req, res) {
-  const { primeiro_nome, sobrenome, email, data_nascimento } = req.body;
+exports.createCliente = async (req, res) => {
   try {
-    const cliente = await clienteModel.createCliente({ primeiro_nome, sobrenome, email, data_nascimento });
-    res.status(201).json({ message: 'Cliente criado com sucesso', cliente });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao criar cliente', error: err });
+    const { primeiro_nome, sobrenome, email, data_nascimento, imagem_url } = req.body;
+    const cliente = await Cliente.create({ primeiro_nome, sobrenome, email, data_nascimento, imagem_url });
+    res.status(201).json(cliente);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao criar cliente', error });
   }
-}
+};
 
 // Obter todos os clientes
-async function getClientes(req, res) {
+exports.getClientes = async (req, res) => {
   try {
-    const clientes = await clienteModel.getClientes();
+    const clientes = await Cliente.findAll();
     res.status(200).json(clientes);
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter clientes', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter clientes', error });
   }
-}
+};
 
 // Obter um cliente por ID
-async function getClienteById(req, res) {
-  const { id } = req.params;
+exports.getClienteById = async (req, res) => {
   try {
-    const cliente = await clienteModel.getClienteById(id);
+    const { id } = req.params;
+    const cliente = await Cliente.findByPk(id);
     if (cliente) {
       res.status(200).json(cliente);
     } else {
       res.status(404).json({ message: 'Cliente não encontrado' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter cliente', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter cliente', error });
   }
-}
+};
 
 // Atualizar um cliente por ID
-async function updateCliente(req, res) {
-  const { id } = req.params;
-  const { primeiro_nome, sobrenome, email, data_nascimento } = req.body;
+exports.updateCliente = async (req, res) => {
   try {
-    const updated = await clienteModel.updateCliente(id, { primeiro_nome, sobrenome, email, data_nascimento });
+    const { id } = req.params;
+    const { primeiro_nome, sobrenome, email, data_nascimento, imagem_url } = req.body;
+    const [updated] = await Cliente.update(
+      { primeiro_nome, sobrenome, email, data_nascimento, imagem_url },
+      { where: { cliente_id: id } }
+    );
     if (updated) {
-      res.status(200).json({ message: 'Cliente atualizado com sucesso' });
+      const updatedCliente = await Cliente.findByPk(id);
+      res.status(200).json(updatedCliente);
     } else {
       res.status(404).json({ message: 'Cliente não encontrado' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao atualizar cliente', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao atualizar cliente', error });
   }
-}
+};
 
 // Excluir um cliente por ID
-async function deleteCliente(req, res) {
-  const { id } = req.params;
+exports.deleteCliente = async (req, res) => {
   try {
-    const deleted = await clienteModel.deleteCliente(id);
+    const { id } = req.params;
+    const deleted = await Cliente.destroy({ where: { cliente_id: id } });
     if (deleted) {
-      res.status(200).json({ message: 'Cliente excluído com sucesso' });
+      res.status(204).json();
     } else {
       res.status(404).json({ message: 'Cliente não encontrado' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao excluir cliente', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao excluir cliente', error });
   }
-}
-
-module.exports = {
-  createCliente,
-  getClientes,
-  getClienteById,
-  updateCliente,
-  deleteCliente
 };

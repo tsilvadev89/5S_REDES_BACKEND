@@ -1,40 +1,61 @@
-const db = require('../database/db');
+const { DataTypes } = require('sequelize');
 
-async function createAgendamento({ cliente_id, servico_id, funcionario_id, data_hora, status }) {
-  const [result] = await db.query(
-    'INSERT INTO agendamentos (cliente_id, servico_id, funcionario_id, data_hora, status) VALUES (?, ?, ?, ?, ?)',
-    [cliente_id, servico_id, funcionario_id, data_hora, status]
-  );
-  return { agendamento_id: result.insertId, cliente_id, servico_id, funcionario_id, data_hora, status };
-}
+module.exports = (sequelize) => {
+  const Agendamento = sequelize.define('Agendamento', {
+    agendamento_id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    cliente_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'clientes',
+        key: 'cliente_id',
+      },
+      allowNull: false,
+    },
+    servico_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'servicos',
+        key: 'servico_id',
+      },
+    },
+    funcionario_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'funcionarios',
+        key: 'funcionario_id',
+      },
+    },
+    data_hora: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    status: {
+      type: DataTypes.ENUM('pendente', 'confirmado', 'cancelado', 'concluido'),
+      defaultValue: 'pendente',
+    },
+  }, {
+    tableName: 'agendamentos',
+    timestamps: false,
+  });
 
-async function getAgendamentos() {
-  const [rows] = await db.query('SELECT * FROM agendamentos');
-  return rows;
-}
+  Agendamento.associate = (models) => {
+    Agendamento.belongsTo(models.Cliente, {
+      foreignKey: 'cliente_id',
+      as: 'cliente',
+    });
+    Agendamento.belongsTo(models.Servico, {
+      foreignKey: 'servico_id',
+      as: 'servico',
+    });
+    Agendamento.belongsTo(models.Funcionario, {
+      foreignKey: 'funcionario_id',
+      as: 'funcionario',
+    });
+  };
 
-async function getAgendamentoById(id) {
-  const [rows] = await db.query('SELECT * FROM agendamentos WHERE agendamento_id = ?', [id]);
-  return rows[0];
-}
-
-async function updateAgendamento(id, { data_hora, status }) {
-  const [result] = await db.query(
-    'UPDATE agendamentos SET data_hora = ?, status = ? WHERE agendamento_id = ?',
-    [data_hora, status, id]
-  );
-  return result.affectedRows > 0;
-}
-
-async function deleteAgendamento(id) {
-  const [result] = await db.query('DELETE FROM agendamentos WHERE agendamento_id = ?', [id]);
-  return result.affectedRows > 0;
-}
-
-module.exports = {
-  createAgendamento,
-  getAgendamentos,
-  getAgendamentoById,
-  updateAgendamento,
-  deleteAgendamento,
+  return Agendamento;
 };

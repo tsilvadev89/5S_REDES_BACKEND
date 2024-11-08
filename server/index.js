@@ -1,8 +1,9 @@
 const express = require('express');
 require('dotenv').config();
 const cors = require('cors'); 
-const createDatabaseAndTables = require('./database/dbCreate'); 
+const { sequelize } = require('./models');
 
+// Importa as rotas
 const clienteRoutes = require('./routes/clienteRoutes');
 const funcionarioRoutes = require('./routes/funcionarioRoutes');
 const produtoRoutes = require('./routes/produtoRoutes');
@@ -14,7 +15,7 @@ const enderecoRoutes = require('./routes/enderecoRoutes');
 const agendamentoRoutes = require('./routes/agendamentoRoutes');
 
 const app = express();
-app.use(express.json()); 
+app.use(express.json());
 
 app.use(cors({
   origin: '*' 
@@ -23,8 +24,10 @@ app.use(cors({
 // Função para inicializar o banco de dados e o servidor
 async function initializeApp() {
   try {
-    await createDatabaseAndTables();
-    console.log('Banco de dados e tabelas configurados com sucesso.');
+    // Sincroniza o banco de dados com Sequelize
+    await sequelize.sync({ alter: true }); // Usar `alter: true` apenas em desenvolvimento para ajustar as tabelas conforme os modelos
+
+    console.log('Banco de dados e tabelas sincronizados com sucesso.');
 
     // Configuração de rotas
     app.use('/api/agendamentos', agendamentoRoutes);
@@ -46,7 +49,7 @@ async function initializeApp() {
       console.log(`Servidor rodando na porta ${PORT}`);
     });
   } catch (error) {
-    console.error('Erro ao configurar o banco de dados:', error);
+    console.error('Erro ao sincronizar o banco de dados:', error);
     process.exit(1);
   }
 }

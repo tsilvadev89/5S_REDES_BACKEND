@@ -1,20 +1,68 @@
 const express = require('express');
-const funcionarioController = require('../controller/funcionarioController');
+const { Funcionario } = require('../models');
 const router = express.Router();
 
-// Rota para criar um novo funcionário
-router.post('/', funcionarioController.createFuncionario);
+// Criar um funcionário
+router.post('/', async (req, res) => {
+  try {
+    const funcionario = await Funcionario.create(req.body);
+    res.status(201).json(funcionario);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao criar funcionário', error });
+  }
+});
 
-// Rota para obter todos os funcionários
-router.get('/', funcionarioController.getFuncionarios);
+// Obter todos os funcionários
+router.get('/', async (req, res) => {
+  try {
+    const funcionarios = await Funcionario.findAll();
+    res.status(200).json(funcionarios);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter funcionários', error });
+  }
+});
 
-// Rota para obter um funcionário específico por ID
-router.get('/:id', funcionarioController.getFuncionarioById);
+// Obter um funcionário por ID
+router.get('/:id', async (req, res) => {
+  try {
+    const funcionario = await Funcionario.findByPk(req.params.id);
+    if (funcionario) {
+      res.status(200).json(funcionario);
+    } else {
+      res.status(404).json({ message: 'Funcionário não encontrado' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter funcionário', error });
+  }
+});
 
-// Rota para atualizar um funcionário por ID
-router.put('/:id', funcionarioController.updateFuncionario);
+// Atualizar um funcionário por ID
+router.put('/:id', async (req, res) => {
+  try {
+    const [updated] = await Funcionario.update(req.body, { where: { funcionario_id: req.params.id } });
+    if (updated) {
+      const funcionario = await Funcionario.findByPk(req.params.id);
+      res.status(200).json(funcionario);
+    } else {
+      res.status(404).json({ message: 'Funcionário não encontrado' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao atualizar funcionário', error });
+  }
+});
 
-// Rota para excluir um funcionário por ID
-router.delete('/:id', funcionarioController.deleteFuncionario);
+// Excluir um funcionário por ID
+router.delete('/:id', async (req, res) => {
+  try {
+    const deleted = await Funcionario.destroy({ where: { funcionario_id: req.params.id } });
+    if (deleted) {
+      res.status(204).json();
+    } else {
+      res.status(404).json({ message: 'Funcionário não encontrado' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao excluir funcionário', error });
+  }
+});
 
 module.exports = router;

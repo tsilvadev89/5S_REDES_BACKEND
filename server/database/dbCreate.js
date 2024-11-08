@@ -83,7 +83,7 @@ async function createDatabaseAndTables(retries = 5, delay = 5000) {
         cliente_id INT AUTO_INCREMENT PRIMARY KEY,
         primeiro_nome VARCHAR(50),
         sobrenome VARCHAR(50),
-        email VARCHAR(100) UNIQUE,
+        email VARCHAR(100),
         data_nascimento DATE,
         data_cadastro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         imagem_url VARCHAR(255)
@@ -95,7 +95,7 @@ async function createDatabaseAndTables(retries = 5, delay = 5000) {
         funcionario_id INT AUTO_INCREMENT PRIMARY KEY,
         primeiro_nome VARCHAR(50),
         sobrenome VARCHAR(50),
-        email VARCHAR(100) UNIQUE,
+        email VARCHAR(100),
         cargo_id INT,
         data_contratacao DATE,
         imagem_url VARCHAR(255),

@@ -1,65 +1,40 @@
-const pool = require('../database/db');
+const { DataTypes } = require('sequelize');
 
-async function createCliente({ primeiro_nome, sobrenome, email, data_nascimento }) {
-  const conn = await pool.getConnection();
-  try {
-    const result = await conn.query(
-      "INSERT INTO clientes (primeiro_nome, sobrenome, email, data_nascimento) VALUES (?, ?, ?, ?)",
-      [primeiro_nome, sobrenome, email, data_nascimento]
-    );
-    return { id: result.insertId, primeiro_nome, sobrenome, email };
-  } finally {
-    if (conn) conn.release();
-  }
-}
+module.exports = (sequelize) => {
+  const Cliente = sequelize.define('Cliente', {
+    cliente_id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    primeiro_nome: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+    },
+    sobrenome: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+    },
+    email: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      unique: true,
+    },
+    data_nascimento: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+    },
+    data_cadastro: {
+      type: DataTypes.DATE,
+      defaultValue: DataTypes.NOW,
+    },
+    imagem_url: {
+      type: DataTypes.STRING(255),
+    },
+  }, {
+    tableName: 'clientes',
+    timestamps: false,
+  });
 
-async function getClientes() {
-  const conn = await pool.getConnection();
-  try {
-    const result = await conn.query("SELECT * FROM clientes");
-    return result;
-  } finally {
-    if (conn) conn.release();
-  }
-}
-
-async function getClienteById(id) {
-  const conn = await pool.getConnection();
-  try {
-    const result = await conn.query("SELECT * FROM clientes WHERE cliente_id = ?", [id]);
-    return result[0];
-  } finally {
-    if (conn) conn.release();
-  }
-}
-
-async function updateCliente(id, { primeiro_nome, sobrenome, email, data_nascimento }) {
-  const conn = await pool.getConnection();
-  try {
-    const result = await conn.query(
-      "UPDATE clientes SET primeiro_nome = ?, sobrenome = ?, email = ?, data_nascimento = ? WHERE cliente_id = ?",
-      [primeiro_nome, sobrenome, email, data_nascimento, id]
-    );
-    return result.affectedRows > 0;
-  } finally {
-    if (conn) conn.release();
-  }
-}
-
-async function deleteCliente(id) {
-  const conn = await pool.getConnection();
-  try {
-    const result = await conn.query("DELETE FROM clientes WHERE cliente_id = ?", [id]);
-    return result.affectedRows > 0;
-  } finally {
-    if (conn) conn.release();
-  }
-}
-
-module.exports = {
-  createCliente,
-  getClientes,
-  getClienteById,
-  updateCliente,
-  deleteCliente
+  return Cliente;
 };

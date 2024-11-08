@@ -1,76 +1,72 @@
-const servicoModel = require('../models/servicoModel');
+const { Servico } = require('../models');
 
 // Criar um novo serviço
-async function createServico(req, res) {
-  const { nome, descricao, preco, duracao } = req.body;
+exports.createServico = async (req, res) => {
   try {
-    const servico = await servicoModel.createServico({ nome, descricao, preco, duracao });
-    res.status(201).json({ message: 'Serviço criado com sucesso', servico });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao criar serviço', error: err });
+    const { nome, descricao, preco, duracao, ativo, categoria_id, imagem_url } = req.body;
+    const servico = await Servico.create({ nome, descricao, preco, duracao, ativo, categoria_id, imagem_url });
+    res.status(201).json(servico);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao criar serviço', error });
   }
-}
+};
 
 // Obter todos os serviços
-async function getServicos(req, res) {
+exports.getServicos = async (req, res) => {
   try {
-    const servicos = await servicoModel.getServicos();
+    const servicos = await Servico.findAll();
     res.status(200).json(servicos);
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter serviços', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter serviços', error });
   }
-}
+};
 
 // Obter um serviço por ID
-async function getServicoById(req, res) {
-  const { id } = req.params;
+exports.getServicoById = async (req, res) => {
   try {
-    const servico = await servicoModel.getServicoById(id);
+    const { id } = req.params;
+    const servico = await Servico.findByPk(id);
     if (servico) {
       res.status(200).json(servico);
     } else {
       res.status(404).json({ message: 'Serviço não encontrado' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter serviço', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter serviço', error });
   }
-}
+};
 
 // Atualizar um serviço por ID
-async function updateServico(req, res) {
-  const { id } = req.params;
-  const { nome, descricao, preco, duracao } = req.body;
+exports.updateServico = async (req, res) => {
   try {
-    const updated = await servicoModel.updateServico(id, { nome, descricao, preco, duracao });
+    const { id } = req.params;
+    const { nome, descricao, preco, duracao, ativo, categoria_id, imagem_url } = req.body;
+    const [updated] = await Servico.update(
+      { nome, descricao, preco, duracao, ativo, categoria_id, imagem_url },
+      { where: { servico_id: id } }
+    );
     if (updated) {
-      res.status(200).json({ message: 'Serviço atualizado com sucesso' });
+      const updatedServico = await Servico.findByPk(id);
+      res.status(200).json(updatedServico);
     } else {
       res.status(404).json({ message: 'Serviço não encontrado' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao atualizar serviço', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao atualizar serviço', error });
   }
-}
+};
 
 // Excluir um serviço por ID
-async function deleteServico(req, res) {
-  const { id } = req.params;
+exports.deleteServico = async (req, res) => {
   try {
-    const deleted = await servicoModel.deleteServico(id);
+    const { id } = req.params;
+    const deleted = await Servico.destroy({ where: { servico_id: id } });
     if (deleted) {
-      res.status(200).json({ message: 'Serviço excluído com sucesso' });
+      res.status(204).json();
     } else {
       res.status(404).json({ message: 'Serviço não encontrado' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao excluir serviço', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao excluir serviço', error });
   }
-}
-
-module.exports = {
-  createServico,
-  getServicos,
-  getServicoById,
-  updateServico,
-  deleteServico
 };

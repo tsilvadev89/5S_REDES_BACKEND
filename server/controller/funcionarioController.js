@@ -1,76 +1,72 @@
-const funcionarioModel = require('../models/funcionarioModel');
+const { Funcionario } = require('../models');
 
 // Criar um novo funcionário
-async function createFuncionario(req, res) {
-  const { primeiro_nome, sobrenome, email, cargo_id, data_contratacao } = req.body;
+exports.createFuncionario = async (req, res) => {
   try {
-    const funcionario = await funcionarioModel.createFuncionario({ primeiro_nome, sobrenome, email, cargo_id, data_contratacao });
-    res.status(201).json({ message: 'Funcionário criado com sucesso', funcionario });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao criar funcionário', error: err });
+    const { primeiro_nome, sobrenome, email, cargo_id, data_contratacao, imagem_url } = req.body;
+    const funcionario = await Funcionario.create({ primeiro_nome, sobrenome, email, cargo_id, data_contratacao, imagem_url });
+    res.status(201).json(funcionario);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao criar funcionário', error });
   }
-}
+};
 
 // Obter todos os funcionários
-async function getFuncionarios(req, res) {
+exports.getFuncionarios = async (req, res) => {
   try {
-    const funcionarios = await funcionarioModel.getFuncionarios();
+    const funcionarios = await Funcionario.findAll();
     res.status(200).json(funcionarios);
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter funcionários', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter funcionários', error });
   }
-}
+};
 
 // Obter um funcionário por ID
-async function getFuncionarioById(req, res) {
-  const { id } = req.params;
+exports.getFuncionarioById = async (req, res) => {
   try {
-    const funcionario = await funcionarioModel.getFuncionarioById(id);
+    const { id } = req.params;
+    const funcionario = await Funcionario.findByPk(id);
     if (funcionario) {
       res.status(200).json(funcionario);
     } else {
       res.status(404).json({ message: 'Funcionário não encontrado' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter funcionário', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter funcionário', error });
   }
-}
+};
 
 // Atualizar um funcionário por ID
-async function updateFuncionario(req, res) {
-  const { id } = req.params;
-  const { primeiro_nome, sobrenome, email, cargo_id, data_contratacao } = req.body;
+exports.updateFuncionario = async (req, res) => {
   try {
-    const updated = await funcionarioModel.updateFuncionario(id, { primeiro_nome, sobrenome, email, cargo_id, data_contratacao });
+    const { id } = req.params;
+    const { primeiro_nome, sobrenome, email, cargo_id, data_contratacao, imagem_url } = req.body;
+    const [updated] = await Funcionario.update(
+      { primeiro_nome, sobrenome, email, cargo_id, data_contratacao, imagem_url },
+      { where: { funcionario_id: id } }
+    );
     if (updated) {
-      res.status(200).json({ message: 'Funcionário atualizado com sucesso' });
+      const updatedFuncionario = await Funcionario.findByPk(id);
+      res.status(200).json(updatedFuncionario);
     } else {
       res.status(404).json({ message: 'Funcionário não encontrado' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao atualizar funcionário', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao atualizar funcionário', error });
   }
-}
+};
 
 // Excluir um funcionário por ID
-async function deleteFuncionario(req, res) {
-  const { id } = req.params;
+exports.deleteFuncionario = async (req, res) => {
   try {
-    const deleted = await funcionarioModel.deleteFuncionario(id);
+    const { id } = req.params;
+    const deleted = await Funcionario.destroy({ where: { funcionario_id: id } });
     if (deleted) {
-      res.status(200).json({ message: 'Funcionário excluído com sucesso' });
+      res.status(204).json();
     } else {
       res.status(404).json({ message: 'Funcionário não encontrado' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao excluir funcionário', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao excluir funcionário', error });
   }
-}
-
-module.exports = {
-  createFuncionario,
-  getFuncionarios,
-  getFuncionarioById,
-  updateFuncionario,
-  deleteFuncionario
 };

@@ -1,65 +1,50 @@
-const pool = require('../database/db');
+const { DataTypes } = require('sequelize');
 
-async function createFuncionario({ primeiro_nome, sobrenome, email, cargo_id, data_contratacao }) {
-  const conn = await pool.getConnection();
-  try {
-    const result = await conn.query(
-      "INSERT INTO funcionarios (primeiro_nome, sobrenome, email, cargo_id, data_contratacao) VALUES (?, ?, ?, ?, ?)",
-      [primeiro_nome, sobrenome, email, cargo_id, data_contratacao]
-    );
-    return { id: result.insertId, primeiro_nome, sobrenome, email };
-  } finally {
-    if (conn) conn.release();
-  }
-}
+module.exports = (sequelize) => {
+  const Funcionario = sequelize.define('Funcionario', {
+    funcionario_id: {
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
+      primaryKey: true,
+    },
+    primeiro_nome: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+    },
+    sobrenome: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+    },
+    email: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
+      unique: true,
+    },
+    cargo_id: {
+      type: DataTypes.INTEGER,
+      references: {
+        model: 'cargos',
+        key: 'cargo_id',
+      },
+    },
+    data_contratacao: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+    },
+    imagem_url: {
+      type: DataTypes.STRING(255),
+    },
+  }, {
+    tableName: 'funcionarios',
+    timestamps: false,
+  });
 
-async function getFuncionarios() {
-  const conn = await pool.getConnection();
-  try {
-    const result = await conn.query("SELECT * FROM funcionarios");
-    return result;
-  } finally {
-    if (conn) conn.release();
-  }
-}
+  Funcionario.associate = (models) => {
+    Funcionario.belongsTo(models.Cargo, {
+      foreignKey: 'cargo_id',
+      as: 'cargo',
+    });
+  };
 
-async function getFuncionarioById(id) {
-  const conn = await pool.getConnection();
-  try {
-    const result = await conn.query("SELECT * FROM funcionarios WHERE funcionario_id = ?", [id]);
-    return result[0];
-  } finally {
-    if (conn) conn.release();
-  }
-}
-
-async function updateFuncionario(id, { primeiro_nome, sobrenome, email, cargo_id, data_contratacao }) {
-  const conn = await pool.getConnection();
-  try {
-    const result = await conn.query(
-      "UPDATE funcionarios SET primeiro_nome = ?, sobrenome = ?, email = ?, cargo_id = ?, data_contratacao = ? WHERE funcionario_id = ?",
-      [primeiro_nome, sobrenome, email, cargo_id, data_contratacao, id]
-    );
-    return result.affectedRows > 0;
-  } finally {
-    if (conn) conn.release();
-  }
-}
-
-async function deleteFuncionario(id) {
-  const conn = await pool.getConnection();
-  try {
-    const result = await conn.query("DELETE FROM funcionarios WHERE funcionario_id = ?", [id]);
-    return result.affectedRows > 0;
-  } finally {
-    if (conn) conn.release();
-  }
-}
-
-module.exports = {
-  createFuncionario,
-  getFuncionarios,
-  getFuncionarioById,
-  updateFuncionario,
-  deleteFuncionario
+  return Funcionario;
 };

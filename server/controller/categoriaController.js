@@ -1,77 +1,69 @@
-const categoriaModel = require('../models/categoriaModel');
+const { Categoria } = require('../models');
 
 // Criar uma nova categoria
-async function createCategoria(req, res) {
-  const { nome, descricao, imagem_url } = req.body;
+exports.createCategoria = async (req, res) => {
   try {
-    const categoria = await categoriaModel.createCategoria({ nome, descricao, imagem_url });
-    res.status(201).json({ message: 'Categoria criada com sucesso', categoria });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao criar categoria', error: err });
+    const { nome, descricao, imagem_url } = req.body;
+    const categoria = await Categoria.create({ nome, descricao, imagem_url });
+    res.status(201).json(categoria);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao criar categoria', error });
   }
-}
+};
 
 // Obter todas as categorias
-async function getCategorias(req, res) {
+exports.getCategorias = async (req, res) => {
   try {
-    const categorias = await categoriaModel.getCategorias();
+    const categorias = await Categoria.findAll();
     res.status(200).json(categorias);
-    //console.log(categorias);
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter categorias', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter categorias', error });
   }
-}
+};
 
 // Obter uma categoria por ID
-async function getCategoriaById(req, res) {
-  const { id } = req.params;
+exports.getCategoriaById = async (req, res) => {
   try {
-    const categoria = await categoriaModel.getCategoriaById(id);
+    const { id } = req.params;
+    const categoria = await Categoria.findByPk(id);
     if (categoria) {
       res.status(200).json(categoria);
     } else {
       res.status(404).json({ message: 'Categoria não encontrada' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter categoria', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter categoria', error });
   }
-}
+};
 
 // Atualizar uma categoria por ID
-async function updateCategoria(req, res) {
-  const { id } = req.params;
-  const { nome, descricao, imagem_url } = req.body;
+exports.updateCategoria = async (req, res) => {
   try {
-    const updated = await categoriaModel.updateCategoria(id, { nome, descricao, imagem_url });
+    const { id } = req.params;
+    const { nome, descricao, imagem_url } = req.body;
+    const [updated] = await Categoria.update({ nome, descricao, imagem_url }, { where: { categoria_id: id } });
     if (updated) {
-      res.status(200).json({ message: 'Categoria atualizada com sucesso' });
+      const updatedCategoria = await Categoria.findByPk(id);
+      res.status(200).json(updatedCategoria);
     } else {
       res.status(404).json({ message: 'Categoria não encontrada' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao atualizar categoria', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao atualizar categoria', error });
   }
-}
+};
 
 // Excluir uma categoria por ID
-async function deleteCategoria(req, res) {
-  const { id } = req.params;
+exports.deleteCategoria = async (req, res) => {
   try {
-    const deleted = await categoriaModel.deleteCategoria(id);
+    const { id } = req.params;
+    const deleted = await Categoria.destroy({ where: { categoria_id: id } });
     if (deleted) {
-      res.status(200).json({ message: 'Categoria excluída com sucesso' });
+      res.status(204).json();
     } else {
       res.status(404).json({ message: 'Categoria não encontrada' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao excluir categoria', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao excluir categoria', error });
   }
-}
-
-module.exports = {
-  createCategoria,
-  getCategorias,
-  getCategoriaById,
-  updateCategoria,
-  deleteCategoria,
 };

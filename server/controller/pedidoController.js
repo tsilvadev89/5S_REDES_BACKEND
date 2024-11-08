@@ -1,118 +1,85 @@
-const pedidoModel = require('../models/pedidoModel');
-
-// CRUD para pedidos
+const { Pedido, Cliente, ItemPedido } = require('../models');
 
 // Criar um novo pedido
-async function createPedido(req, res) {
-  const { cliente_id, valor_total } = req.body;
+exports.createPedido = async (req, res) => {
   try {
-    const pedido = await pedidoModel.createPedido({ cliente_id, valor_total });
-    res.status(201).json({ message: 'Pedido criado com sucesso', pedido });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao criar pedido', error: err });
+    const { cliente_id, valor_total, itens } = req.body;
+    const pedido = await Pedido.create({ cliente_id, valor_total });
+    
+    // Adicionar itens ao pedido, caso sejam fornecidos
+    if (itens && Array.isArray(itens)) {
+      for (const item of itens) {
+        await ItemPedido.create({
+          pedido_id: pedido.pedido_id,
+          produto_id: item.produto_id,
+          quantidade: item.quantidade,
+          preco_unitario: item.preco_unitario,
+        });
+      }
+    }
+    
+    res.status(201).json(pedido);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao criar pedido', error });
   }
-}
+};
 
 // Obter todos os pedidos
-async function getPedidos(req, res) {
+exports.getPedidos = async (req, res) => {
   try {
-    const pedidos = await pedidoModel.getPedidos();
+    const pedidos = await Pedido.findAll({ include: [Cliente, ItemPedido] });
     res.status(200).json(pedidos);
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter pedidos', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter pedidos', error });
   }
-}
+};
 
 // Obter um pedido por ID
-async function getPedidoById(req, res) {
-  const { id } = req.params;
+exports.getPedidoById = async (req, res) => {
   try {
-    const pedido = await pedidoModel.getPedidoById(id);
-    pedido ? res.status(200).json(pedido) : res.status(404).json({ message: 'Pedido não encontrado' });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter pedido', error: err });
+    const { id } = req.params;
+    const pedido = await Pedido.findByPk(id, { include: [Cliente, ItemPedido] });
+    if (pedido) {
+      res.status(200).json(pedido);
+    } else {
+      res.status(404).json({ message: 'Pedido não encontrado' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter pedido', error });
   }
-}
+};
 
-// Atualizar um pedido
-async function updatePedido(req, res) {
-  const { id } = req.params;
-  const { valor_total } = req.body;
+// Atualizar um pedido por ID
+exports.updatePedido = async (req, res) => {
   try {
-    const updated = await pedidoModel.updatePedido(id, { valor_total });
-    updated ? res.status(200).json({ message: 'Pedido atualizado com sucesso' }) : res.status(404).json({ message: 'Pedido não encontrado' });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao atualizar pedido', error: err });
+    const { id } = req.params;
+    const { cliente_id, valor_total } = req.body;
+    const [updated] = await Pedido.update(
+      { cliente_id, valor_total },
+      { where: { pedido_id: id } }
+    );
+    if (updated) {
+      const updatedPedido = await Pedido.findByPk(id);
+      res.status(200).json(updatedPedido);
+    } else {
+      res.status(404).json({ message: 'Pedido não encontrado' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao atualizar pedido', error });
   }
-}
+};
 
-// Excluir um pedido
-async function deletePedido(req, res) {
-  const { id } = req.params;
+// Excluir um pedido por ID
+exports.deletePedido = async (req, res) => {
   try {
-    const deleted = await pedidoModel.deletePedido(id);
-    deleted ? res.status(200).json({ message: 'Pedido excluído com sucesso' }) : res.status(404).json({ message: 'Pedido não encontrado' });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao excluir pedido', error: err });
+    const { id } = req.params;
+    const deleted = await Pedido.destroy({ where: { pedido_id: id } });
+    if (deleted) {
+      res.status(204).json();
+    } else {
+      res.status(404).json({ message: 'Pedido não encontrado' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao excluir pedido', error });
   }
-}
-
-// CRUD para itens de pedido
-
-// Obter itens de um pedido
-async function getItensPedido(req, res) {
-  const { id } = req.params;
-  try {
-    const itens = await pedidoModel.getItensPedido(id);
-    res.status(200).json(itens);
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter itens do pedido', error: err });
-  }
-}
-
-// Criar um novo item de pedido
-async function createItemPedido(req, res) {
-  const { id } = req.params;
-  const { produto_id, quantidade, preco_unitario } = req.body;
-  try {
-    const itemPedido = await pedidoModel.createItemPedido(id, { produto_id, quantidade, preco_unitario });
-    res.status(201).json({ message: 'Item de pedido criado com sucesso', itemPedido });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao criar item de pedido', error: err });
-  }
-}
-
-// Atualizar um item de pedido
-async function updateItemPedido(req, res) {
-  const { id, itemId } = req.params;
-  const { quantidade, preco_unitario } = req.body;
-  try {
-    const updated = await pedidoModel.updateItemPedido(itemId, { quantidade, preco_unitario });
-    updated ? res.status(200).json({ message: 'Item de pedido atualizado com sucesso' }) : res.status(404).json({ message: 'Item de pedido não encontrado' });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao atualizar item de pedido', error: err });
-  }
-}
-
-// Excluir um item de pedido
-async function deleteItemPedido(req, res) {
-  const { itemId } = req.params;
-  try {
-    const deleted = await pedidoModel.deleteItemPedido(itemId);
-    deleted ? res.status(200).json({ message: 'Item de pedido excluído com sucesso' }) : res.status(404).json({ message: 'Item de pedido não encontrado' });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao excluir item de pedido', error: err });
-  }
-}
-
-module.exports = {
-  createPedido,
-  getPedidos,
-  getPedidoById,
-  updatePedido,
-  deletePedido,
-  getItensPedido,
-  createItemPedido,
-  updateItemPedido,
-  deleteItemPedido,
 };

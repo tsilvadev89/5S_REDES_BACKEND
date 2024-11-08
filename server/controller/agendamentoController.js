@@ -1,64 +1,72 @@
-const agendamentoModel = require('../models/agendamentoModel');
+const { Agendamento, Cliente, Funcionario, Servico } = require('../models');
 
 // Criar um novo agendamento
-async function createAgendamento(req, res) {
-  const { cliente_id, servico_id, funcionario_id, data_hora, status } = req.body;
+exports.createAgendamento = async (req, res) => {
   try {
-    const agendamento = await agendamentoModel.createAgendamento({ cliente_id, servico_id, funcionario_id, data_hora, status });
-    res.status(201).json({ message: 'Agendamento criado com sucesso', agendamento });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao criar agendamento', error: err });
+    const { cliente_id, servico_id, funcionario_id, data_hora, status } = req.body;
+    const agendamento = await Agendamento.create({ cliente_id, servico_id, funcionario_id, data_hora, status });
+    res.status(201).json(agendamento);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao criar agendamento', error });
   }
-}
+};
 
 // Obter todos os agendamentos
-async function getAgendamentos(req, res) {
+exports.getAgendamentos = async (req, res) => {
   try {
-    const agendamentos = await agendamentoModel.getAgendamentos();
+    const agendamentos = await Agendamento.findAll({ include: [Cliente, Funcionario, Servico] });
     res.status(200).json(agendamentos);
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter agendamentos', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter agendamentos', error });
   }
-}
+};
 
 // Obter um agendamento por ID
-async function getAgendamentoById(req, res) {
-  const { id } = req.params;
+exports.getAgendamentoById = async (req, res) => {
   try {
-    const agendamento = await agendamentoModel.getAgendamentoById(id);
-    agendamento ? res.status(200).json(agendamento) : res.status(404).json({ message: 'Agendamento não encontrado' });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter agendamento', error: err });
+    const { id } = req.params;
+    const agendamento = await Agendamento.findByPk(id, { include: [Cliente, Funcionario, Servico] });
+    if (agendamento) {
+      res.status(200).json(agendamento);
+    } else {
+      res.status(404).json({ message: 'Agendamento não encontrado' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter agendamento', error });
   }
-}
+};
 
 // Atualizar um agendamento por ID
-async function updateAgendamento(req, res) {
-  const { id } = req.params;
-  const { data_hora, status } = req.body;
+exports.updateAgendamento = async (req, res) => {
   try {
-    const updated = await agendamentoModel.updateAgendamento(id, { data_hora, status });
-    updated ? res.status(200).json({ message: 'Agendamento atualizado com sucesso' }) : res.status(404).json({ message: 'Agendamento não encontrado' });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao atualizar agendamento', error: err });
+    const { id } = req.params;
+    const { cliente_id, servico_id, funcionario_id, data_hora, status } = req.body;
+    const [updated] = await Agendamento.update(
+      { cliente_id, servico_id, funcionario_id, data_hora, status },
+      { where: { agendamento_id: id } }
+    );
+    if (updated) {
+      const updatedAgendamento = await Agendamento.findByPk(id);
+      res.status(200).json(updatedAgendamento);
+    } else {
+      res.status(404).json({ message: 'Agendamento não encontrado' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao atualizar agendamento', error });
   }
-}
+};
 
 // Excluir um agendamento por ID
-async function deleteAgendamento(req, res) {
-  const { id } = req.params;
+exports.deleteAgendamento = async (req, res) => {
   try {
-    const deleted = await agendamentoModel.deleteAgendamento(id);
-    deleted ? res.status(200).json({ message: 'Agendamento excluído com sucesso' }) : res.status(404).json({ message: 'Agendamento não encontrado' });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao excluir agendamento', error: err });
+    const { id } = req.params;
+    const deleted = await Agendamento.destroy({ where: { agendamento_id: id } });
+    if (deleted) {
+      res.status(204).json();
+    } else {
+      res.status(404).json({ message: 'Agendamento não encontrado' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao excluir agendamento', error });
   }
-}
-
-module.exports = {
-  createAgendamento,
-  getAgendamentos,
-  getAgendamentoById,
-  updateAgendamento,
-  deleteAgendamento,
 };

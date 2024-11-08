@@ -1,76 +1,72 @@
-const produtoModel = require('../models/produtoModel');
+const { Produto } = require('../models');
 
 // Criar um novo produto
-async function createProduto(req, res) {
-  const { nome, descricao, preco, estoque, categoria_id } = req.body;
+exports.createProduto = async (req, res) => {
   try {
-    const produto = await produtoModel.createProduto({ nome, descricao, preco, estoque, categoria_id });
-    res.status(201).json({ message: 'Produto criado com sucesso', produto });
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao criar produto', error: err });
+    const { nome, descricao, preco, estoque, categoria_id, ativo, imagem_url } = req.body;
+    const produto = await Produto.create({ nome, descricao, preco, estoque, categoria_id, ativo, imagem_url });
+    res.status(201).json(produto);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao criar produto', error });
   }
-}
+};
 
 // Obter todos os produtos
-async function getProdutos(req, res) {
+exports.getProdutos = async (req, res) => {
   try {
-    const produtos = await produtoModel.getProdutos();
+    const produtos = await Produto.findAll();
     res.status(200).json(produtos);
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter produtos', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter produtos', error });
   }
-}
+};
 
 // Obter um produto por ID
-async function getProdutoById(req, res) {
-  const { id } = req.params;
+exports.getProdutoById = async (req, res) => {
   try {
-    const produto = await produtoModel.getProdutoById(id);
+    const { id } = req.params;
+    const produto = await Produto.findByPk(id);
     if (produto) {
       res.status(200).json(produto);
     } else {
       res.status(404).json({ message: 'Produto não encontrado' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao obter produto', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao obter produto', error });
   }
-}
+};
 
 // Atualizar um produto por ID
-async function updateProduto(req, res) {
-  const { id } = req.params;
-  const { nome, descricao, preco, estoque, categoria_id } = req.body;
+exports.updateProduto = async (req, res) => {
   try {
-    const updated = await produtoModel.updateProduto(id, { nome, descricao, preco, estoque, categoria_id });
+    const { id } = req.params;
+    const { nome, descricao, preco, estoque, categoria_id, ativo, imagem_url } = req.body;
+    const [updated] = await Produto.update(
+      { nome, descricao, preco, estoque, categoria_id, ativo, imagem_url },
+      { where: { produto_id: id } }
+    );
     if (updated) {
-      res.status(200).json({ message: 'Produto atualizado com sucesso' });
+      const updatedProduto = await Produto.findByPk(id);
+      res.status(200).json(updatedProduto);
     } else {
       res.status(404).json({ message: 'Produto não encontrado' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao atualizar produto', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao atualizar produto', error });
   }
-}
+};
 
 // Excluir um produto por ID
-async function deleteProduto(req, res) {
-  const { id } = req.params;
+exports.deleteProduto = async (req, res) => {
   try {
-    const deleted = await produtoModel.deleteProduto(id);
+    const { id } = req.params;
+    const deleted = await Produto.destroy({ where: { produto_id: id } });
     if (deleted) {
-      res.status(200).json({ message: 'Produto excluído com sucesso' });
+      res.status(204).json();
     } else {
       res.status(404).json({ message: 'Produto não encontrado' });
     }
-  } catch (err) {
-    res.status(500).json({ message: 'Erro ao excluir produto', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao excluir produto', error });
   }
-}
-
-module.exports = {
-  createProduto,
-  getProdutos,
-  getProdutoById,
-  updateProduto,
-  deleteProduto
 };
