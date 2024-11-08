@@ -1,50 +1,41 @@
 const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
 
-module.exports = (sequelize) => {
-  const Funcionario = sequelize.define('Funcionario', {
-    funcionario_id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
+const Funcionario = sequelize.define('Funcionario', {
+  funcionario_id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  primeiro_nome: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+  },
+  sobrenome: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+  },
+  email: {
+    type: DataTypes.STRING(100),
+    unique: true,
+    allowNull: false,
+  },
+  cargo_id: {
+    type: DataTypes.INTEGER,
+    references: {
+      model: 'cargos',
+      key: 'cargo_id',
     },
-    primeiro_nome: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-    sobrenome: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-    email: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-      unique: true,
-    },
-    cargo_id: {
-      type: DataTypes.INTEGER,
-      references: {
-        model: 'cargos',
-        key: 'cargo_id',
-      },
-    },
-    data_contratacao: {
-      type: DataTypes.DATEONLY,
-      allowNull: false,
-    },
-    imagem_url: {
-      type: DataTypes.STRING(255),
-    },
-  }, {
-    tableName: 'funcionarios',
-    timestamps: false,
-  });
+  },
+  data_contratacao: {
+    type: DataTypes.DATE,
+  },
+  imagem_url: {
+    type: DataTypes.STRING(255),
+  },
+}, {
+  tableName: 'funcionarios',
+  timestamps: false,
+});
 
-  Funcionario.associate = (models) => {
-    Funcionario.belongsTo(models.Cargo, {
-      foreignKey: 'cargo_id',
-      as: 'cargo',
-    });
-  };
-
-  return Funcionario;
-};
+module.exports = Funcionario;

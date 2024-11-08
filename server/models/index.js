@@ -1,31 +1,17 @@
-const { Sequelize } = require('sequelize');
-const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+// models/index.js
+const { sequelize } = require('../config/database');
+const Agendamento = require('./agendamentoModel');
+const Cargo = require('./cargoModel');
+const Categoria = require('./categoriaModel');
+const Cliente = require('./clienteModel');
+const Endereco = require('./enderecoModel');
+const Funcionario = require('./funcionarioModel');
+const Pedido = require('./pedidoModel');
+const Produto = require('./produtoModel');
+const Servico = require('./servicoModel');
+const ItemPedido = require('./itemPedidoModel');
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME || 'salao_beleza',
-  process.env.DB_USER || 'root',
-  process.env.DB_PASSWORD || 'password',
-  {
-    host: process.env.DB_HOST || 'localhost',
-    dialect: 'mariadb',
-    logging: false,  // Desabilitar logs do Sequelize (opcional)
-  }
-);
-
-// Importar modelos
-const Agendamento = require('./agendamentoModel')(sequelize, Sequelize);
-const Cargo = require('./cargoModel')(sequelize, Sequelize);
-const Categoria = require('./categoriaModel')(sequelize, Sequelize);
-const Cliente = require('./clienteModel')(sequelize, Sequelize);
-const Endereco = require('./enderecoModel')(sequelize, Sequelize);
-const Funcionario = require('./funcionarioModel')(sequelize, Sequelize);
-const Pedido = require('./pedidoModel')(sequelize, Sequelize);
-const Produto = require('./produtoModel')(sequelize, Sequelize);
-const Servico = require('./servicoModel')(sequelize, Sequelize);
-const ItemPedido = require('./itemPedidoModel')(sequelize, Sequelize);
-
-// Configurar associações entre modelos
+// Configura as associações entre os modelos
 
 // Cliente e Endereço
 Cliente.hasMany(Endereco, { foreignKey: 'entidade_id', constraints: false, scope: { tipo_entidade: 'cliente' } });
@@ -71,10 +57,9 @@ Agendamento.belongsTo(Funcionario, { foreignKey: 'funcionario_id' });
 Servico.hasMany(Agendamento, { foreignKey: 'servico_id' });
 Agendamento.belongsTo(Servico, { foreignKey: 'servico_id' });
 
-// Exportar conexão e modelos
+// Exporta a conexão e os modelos
 module.exports = {
   sequelize,
-  Sequelize,
   Agendamento,
   Cargo,
   Categoria,
