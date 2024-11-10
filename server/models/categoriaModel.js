@@ -17,6 +17,11 @@ const Categoria = sequelize.define('Categoria', {
   imagem_url: {
     type: DataTypes.STRING(255),
   },
+  tipo: {
+    type: DataTypes.ENUM('Produto', 'Serviço'),
+    allowNull: false,
+    defaultValue: 'Produto',
+  },
 }, {
   tableName: 'categorias',
   timestamps: false,
