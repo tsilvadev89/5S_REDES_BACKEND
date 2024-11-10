@@ -110,6 +110,17 @@ async function ensureDatabaseExists() {
       console.log(`Banco de dados "${dbConfig.database}" criado com sucesso.`);
     } else {
       console.log(`Banco de dados "${dbConfig.database}" já existe.`);
+      const dropDBQuery = `DROP DATABASE ${dbConfig.database}`;
+      if (dbConfig.dialect === 'mariadb') {
+        await connection.query(dropDBQuery);
+        console.log(`Banco de dados "${dbConfig.database}" DELETADO.`);
+      }
+
+      const createDBQuery = `CREATE DATABASE ${dbConfig.database}`;
+      if (dbConfig.dialect === 'mariadb') {
+        await connection.query(createDBQuery);
+        console.log(`Banco de dados "${dbConfig.database}" RECRIADO.`);
+      }
     }
   } catch (error) {
     console.error('Erro ao verificar ou criar o banco de dados:', error);
