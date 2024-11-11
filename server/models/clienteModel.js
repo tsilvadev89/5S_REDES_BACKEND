@@ -20,6 +20,10 @@ const Cliente = sequelize.define('Cliente', {
     unique: true,
     allowNull: false,
   },
+  senha: {
+    type: DataTypes.STRING(100), 
+    allowNull: false,
+  },
   data_nascimento: {
     type: DataTypes.DATEONLY,
   },

@@ -20,6 +20,10 @@ const Funcionario = sequelize.define('Funcionario', {
     unique: true,
     allowNull: false,
   },
+  senha: {
+    type: DataTypes.STRING(100), 
+    allowNull: false,
+  },
   cargo_id: {
     type: DataTypes.INTEGER,
     references: {

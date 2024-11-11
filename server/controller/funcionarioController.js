@@ -1,10 +1,24 @@
+const bcrypt = require('bcrypt');
 const { Funcionario } = require('../models');
 
 // Criar um novo funcionário
 exports.createFuncionario = async (req, res) => {
   try {
-    const { primeiro_nome, sobrenome, email, cargo_id, data_contratacao, imagem_url } = req.body;
-    const funcionario = await Funcionario.create({ primeiro_nome, sobrenome, email, cargo_id, data_contratacao, imagem_url });
+    const { primeiro_nome, sobrenome, email, cargo_id, data_contratacao, imagem_url, senha } = req.body;
+
+    // Hash da senha antes de armazenar no banco de dados
+    const hashedPassword = await bcrypt.hash(senha, 10);
+
+    const funcionario = await Funcionario.create({
+      primeiro_nome,
+      sobrenome,
+      email,
+      cargo_id,
+      data_contratacao,
+      imagem_url,
+      senha: hashedPassword, // Armazenando a senha criptografada
+    });
+
     res.status(201).json(funcionario);
   } catch (error) {
     res.status(500).json({ message: 'Erro ao criar funcionário', error });
@@ -40,11 +54,16 @@ exports.getFuncionarioById = async (req, res) => {
 exports.updateFuncionario = async (req, res) => {
   try {
     const { id } = req.params;
-    const { primeiro_nome, sobrenome, email, cargo_id, data_contratacao, imagem_url } = req.body;
-    const [updated] = await Funcionario.update(
-      { primeiro_nome, sobrenome, email, cargo_id, data_contratacao, imagem_url },
-      { where: { funcionario_id: id } }
-    );
+    const { primeiro_nome, sobrenome, email, cargo_id, data_contratacao, imagem_url, senha } = req.body;
+
+    const updatedData = { primeiro_nome, sobrenome, email, cargo_id, data_contratacao, imagem_url };
+
+    // Verifica se a senha foi fornecida e hasheia antes de atualizar
+    if (senha) {
+      updatedData.senha = await bcrypt.hash(senha, 10);
+    }
+
+    const [updated] = await Funcionario.update(updatedData, { where: { funcionario_id: id } });
     if (updated) {
       const updatedFuncionario = await Funcionario.findByPk(id);
       res.status(200).json(updatedFuncionario);

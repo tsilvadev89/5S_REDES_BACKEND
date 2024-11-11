@@ -1,10 +1,23 @@
+const bcrypt = require('bcrypt');
 const { Cliente } = require('../models');
 
 // Criar um novo cliente
 exports.createCliente = async (req, res) => {
   try {
-    const { primeiro_nome, sobrenome, email, data_nascimento, imagem_url } = req.body;
-    const cliente = await Cliente.create({ primeiro_nome, sobrenome, email, data_nascimento, imagem_url });
+    const { primeiro_nome, sobrenome, email, data_nascimento, imagem_url, senha } = req.body;
+
+    // Hash da senha
+    const hashedPassword = await bcrypt.hash(senha, 10);
+
+    const cliente = await Cliente.create({
+      primeiro_nome,
+      sobrenome,
+      email,
+      data_nascimento,
+      imagem_url,
+      senha: hashedPassword, // Armazena a senha criptografada
+    });
+
     res.status(201).json(cliente);
   } catch (error) {
     res.status(500).json({ message: 'Erro ao criar cliente', error });
@@ -40,11 +53,16 @@ exports.getClienteById = async (req, res) => {
 exports.updateCliente = async (req, res) => {
   try {
     const { id } = req.params;
-    const { primeiro_nome, sobrenome, email, data_nascimento, imagem_url } = req.body;
-    const [updated] = await Cliente.update(
-      { primeiro_nome, sobrenome, email, data_nascimento, imagem_url },
-      { where: { cliente_id: id } }
-    );
+    const { primeiro_nome, sobrenome, email, data_nascimento, imagem_url, senha } = req.body;
+
+    const updatedData = { primeiro_nome, sobrenome, email, data_nascimento, imagem_url };
+
+    // Verifica se a senha foi fornecida e hasheia antes de atualizar
+    if (senha) {
+      updatedData.senha = await bcrypt.hash(senha, 10);
+    }
+
+    const [updated] = await Cliente.update(updatedData, { where: { cliente_id: id } });
     if (updated) {
       const updatedCliente = await Cliente.findByPk(id);
       res.status(200).json(updatedCliente);
