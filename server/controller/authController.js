@@ -34,7 +34,7 @@ exports.loginUsuario = async (req, res) => {
     // Verifique se a senha fornecida é igual à senha armazenada (hashed)
     const isMatch = await bcrypt.compare(senha, usuario.senha);
 
-    console.log('BRCRYPT executado resultado - ', isMatch);
+    /* console.log('BRCRYPT executado resultado - ', isMatch); */
 
     if (!isMatch) {
       return res.status(401).json({ message: 'Senha incorreta' });

@@ -14,6 +14,7 @@ const categoriaRoutes = require('./routes/categoriaRoutes');
 const enderecoRoutes = require('./routes/enderecoRoutes');
 const agendamentoRoutes = require('./routes/agendamentoRoutes');
 const authRoutes = require('./routes/authRoutes');
+const lgpdRoutes = require('./routes/lgpdRoutes');
 
 const app = express();
 app.use(express.json());
@@ -37,6 +38,8 @@ async function initializeApp() {
     app.use('/api/produtos', produtoRoutes);
     app.use('/api/servicos', servicoRoutes);
     app.use('/api/auth', authRoutes);
+    app.use('/api/lgpd', lgpdRoutes);
+    
 
     app.use((req, res) => {
       res.status(404).json({ message: 'Rota não encontrada' });

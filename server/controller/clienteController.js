@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const { Cliente } = require('../models');
+const backupService = require('../services/backupService');
 
 // Criar um novo cliente
 exports.createCliente = async (req, res) => {
@@ -79,7 +80,11 @@ exports.deleteCliente = async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await Cliente.destroy({ where: { cliente_id: id } });
+    console.log('deleteCliente - ', 'deleteCliente')
     if (deleted) {
+      await backupService.removeUserFromBackup(id);
+      console.log('deleteCliente - ', 'removeUserFromBackup')
+
       res.status(204).json();
     } else {
       res.status(404).json({ message: 'Cliente não encontrado' });
