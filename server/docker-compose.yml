@@ -4,7 +4,7 @@ services:
   # Backend
   backend:
     build:
-      context: .
+      context: .  # Caminho para o Dockerfile do backend
     ports:
       - "3000:3000"
     environment:
@@ -39,7 +39,7 @@ services:
     build:
       context: ../../5S_REDES_FRONTEND/frontend
     ports:
-      - "8001:8001"  
+      - "8001:8001"
     volumes:
       - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server1.conf:/etc/nginx/nginx.conf  
     depends_on:
@@ -48,14 +48,14 @@ services:
       VITE_BASE_URL: http://localhost:3000/api
       VITE_BASE_PATH_FRONTEND: http://localhost:8001
       VITE_FRONTEND_PORT: 8001
-    command: /bin/sh -c "until nc -z -v -w30 backend 3000; do echo 'Aguardando Backend...'; sleep 2; done; npm run dev --mode server1"
+    command: /bin/sh -c "until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; npm run dev --mode server1"
 
   # Frontend Server 2
   frontend-server2:
     build:
       context: ../../5S_REDES_FRONTEND/frontend
     ports:
-      - "8002:8002"  
+      - "8002:8002"
     volumes:
       - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server2.conf:/etc/nginx/nginx.conf  
     depends_on:
@@ -64,14 +64,14 @@ services:
       VITE_BASE_URL: http://localhost:3000/api
       VITE_BASE_PATH_FRONTEND: http://localhost:8002
       VITE_FRONTEND_PORT: 8002
-    command: /bin/sh -c "until nc -z -v -w30 backend 3000; do echo 'Aguardando Backend...'; sleep 2; done; npm run dev --mode server2"
+    command: /bin/sh -c "until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; npm run dev --mode server2"
 
   # Frontend Server 3
   frontend-server3:
     build:
       context: ../../5S_REDES_FRONTEND/frontend
     ports:
-      - "8003:8003"  
+      - "8003:8003"
     volumes:
       - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server3.conf:/etc/nginx/nginx.conf  
     depends_on:
@@ -80,4 +80,4 @@ services:
       VITE_BASE_URL: http://localhost:3000/api
       VITE_BASE_PATH_FRONTEND_SERVER3: http://localhost:8003
       VITE_FRONTEND_PORT: 8003
-    command: /bin/sh -c "until nc -z -v -w30 backend 3000; do echo 'Aguardando Backend...'; sleep 2; done; npm run dev --mode server3"
+    command: /bin/sh -c "until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; npm run dev --mode server3"

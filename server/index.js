@@ -22,6 +22,11 @@ app.use(cors({
   origin: '*',
 }));
 
+// Rota de saúde para monitoramento
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ message: 'Backend está funcionando corretamente' });
+});
+
 async function initializeApp() {
   try {
     await populateData(); // Criação e população do banco de dados
@@ -44,6 +49,7 @@ async function initializeApp() {
     app.use((req, res) => {
       res.status(404).json({ message: 'Rota não encontrada' });
     });
+    
 
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
