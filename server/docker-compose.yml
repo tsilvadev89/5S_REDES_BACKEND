@@ -27,7 +27,7 @@ services:
 
   frontend:
     build:
-      context: ../../5S_REDES_FRONTEND
+      context: ../../5S_REDES_FRONTEND/frontend
     ports:
       - "80:80"
     depends_on:
