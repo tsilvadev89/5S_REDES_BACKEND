@@ -1,14 +1,14 @@
-# Use a imagem oficial do Node.js
-FROM node:22.11.0
+# Use a versão leve do Node.js baseada em Alpine
+FROM node:18-alpine
 
 # Defina o diretório de trabalho dentro do container
 WORKDIR /usr/src/app
 
-# Copie o package.json e package-lock.json para o diretório de trabalho
+# Copie apenas os arquivos necessários para instalar as dependências
 COPY package*.json ./
 
-# Instale as dependências do projeto
-RUN npm install
+# Instale as dependências com otimizações
+RUN npm install --production
 
 # Copie o restante dos arquivos do projeto para o container
 COPY . .
