@@ -44,11 +44,12 @@ services:
       - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server1.conf:/etc/nginx/nginx.conf  
     depends_on:
       - backend
+      - db
     environment:
       VITE_BASE_URL: http://localhost:3000/api
       VITE_BASE_PATH_FRONTEND: http://localhost:8001
       VITE_FRONTEND_PORT: 8001
-    command: /bin/sh -c "until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; npm run dev --mode server1"
+    command: /bin/sh -c "until nc -z -v -w30 db 3306; do echo 'Aguardando DB...'; sleep 2; done; until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; npm run dev --mode server1"
 
   # Frontend Server 2
   frontend-server2:
@@ -60,11 +61,12 @@ services:
       - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server2.conf:/etc/nginx/nginx.conf  
     depends_on:
       - backend
+      - db
     environment:
       VITE_BASE_URL: http://localhost:3000/api
       VITE_BASE_PATH_FRONTEND: http://localhost:8002
       VITE_FRONTEND_PORT: 8002
-    command: /bin/sh -c "until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; npm run dev --mode server2"
+    command: /bin/sh -c "until nc -z -v -w30 db 3306; do echo 'Aguardando DB...'; sleep 2; done; until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; npm run dev --mode server2"
 
   # Frontend Server 3
   frontend-server3:
@@ -76,8 +78,9 @@ services:
       - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server3.conf:/etc/nginx/nginx.conf  
     depends_on:
       - backend
+      - db
     environment:
       VITE_BASE_URL: http://localhost:3000/api
       VITE_BASE_PATH_FRONTEND_SERVER3: http://localhost:8003
       VITE_FRONTEND_PORT: 8003
-    command: /bin/sh -c "until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; npm run dev --mode server3"
+    command: /bin/sh -c "until nc -z -v -w30 db 3306; do echo 'Aguardando DB...'; sleep 2; done; until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; npm run dev --mode server3"
