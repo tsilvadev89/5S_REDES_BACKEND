@@ -42,7 +42,7 @@ if (process.env.SETDB === 'MYSQL') {
 } else {
   // Configuração padrão para MariaDB Local
   dbConfig = {
-    host: process.env.DB_LOCAL_HOST,
+    host: process.env.DB_LOCAL_HOST || 'localhost',
     user: process.env.DB_LOCAL_USER,
     password: process.env.DB_LOCAL_PASSWORD,
     database: process.env.DB_LOCAL_NAME,
