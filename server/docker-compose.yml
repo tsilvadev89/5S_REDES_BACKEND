@@ -38,8 +38,10 @@ services:
   frontend-server1:
     build:
       context: ../../5S_REDES_FRONTEND/frontend
+      args:
+        VITE_FRONTEND_PORT: 8001  # Passa a variável de ambiente para o build
     ports:
-      - "8001:8001"
+      - "8001:80"  # Mapeia a porta 80 do contêiner para a porta 8001 do host
     volumes:
       - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server1.conf:/etc/nginx/nginx.conf  
     depends_on:
@@ -48,15 +50,16 @@ services:
     environment:
       VITE_BASE_URL: http://localhost:3000/api
       VITE_BASE_PATH_FRONTEND: http://localhost:8001
-      VITE_FRONTEND_PORT: 8001
     command: /bin/sh -c "until nc -z -v -w30 db 3306; do echo 'Aguardando DB...'; sleep 2; done; until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; nginx -g 'daemon off;'"
 
   # Frontend Server 2
   frontend-server2:
     build:
       context: ../../5S_REDES_FRONTEND/frontend
+      args:
+        VITE_FRONTEND_PORT: 8002  # Passa a variável de ambiente para o build
     ports:
-      - "8002:8002"
+      - "8002:80"  # Mapeia a porta 80 do contêiner para a porta 8002 do host
     volumes:
       - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server2.conf:/etc/nginx/nginx.conf  
     depends_on:
@@ -65,15 +68,16 @@ services:
     environment:
       VITE_BASE_URL: http://localhost:3000/api
       VITE_BASE_PATH_FRONTEND: http://localhost:8002
-      VITE_FRONTEND_PORT: 8002
     command: /bin/sh -c "until nc -z -v -w30 db 3306; do echo 'Aguardando DB...'; sleep 2; done; until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; nginx -g 'daemon off;'"
 
   # Frontend Server 3
   frontend-server3:
     build:
       context: ../../5S_REDES_FRONTEND/frontend
+      args:
+        VITE_FRONTEND_PORT: 8003  # Passa a variável de ambiente para o build
     ports:
-      - "8003:8003"
+      - "8003:80"  # Mapeia a porta 80 do contêiner para a porta 8003 do host
     volumes:
       - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server3.conf:/etc/nginx/nginx.conf  
     depends_on:
@@ -82,5 +86,4 @@ services:
     environment:
       VITE_BASE_URL: http://localhost:3000/api
       VITE_BASE_PATH_FRONTEND_SERVER3: http://localhost:8003
-      VITE_FRONTEND_PORT: 8003
     command: /bin/sh -c "until nc -z -v -w30 db 3306; do echo 'Aguardando DB...'; sleep 2; done; until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; nginx -g 'daemon off;'"
