@@ -41,7 +41,7 @@ services:
     ports:
       - "8001:8001"  
     volumes:
-      - ./nginx/nginx-server1.conf:/etc/nginx/nginx.conf  
+      - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server1.conf:/etc/nginx/nginx.conf  
     depends_on:
       - backend
     environment:
@@ -57,7 +57,7 @@ services:
     ports:
       - "8002:8002"  
     volumes:
-      - ./nginx/nginx-server2.conf:/etc/nginx/nginx.conf  
+      - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server2.conf:/etc/nginx/nginx.conf  
     depends_on:
       - backend
     environment:
@@ -73,7 +73,7 @@ services:
     ports:
       - "8003:8003"  
     volumes:
-      - ./nginx/nginx-server3.conf:/etc/nginx/nginx.conf  
+      - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server3.conf:/etc/nginx/nginx.conf  
     depends_on:
       - backend
     environment:
