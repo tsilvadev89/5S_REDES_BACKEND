@@ -14,6 +14,8 @@ services:
       DB_NAME: salao_beleza
     depends_on:
       - db
+    # Adiciona uma espera no serviço backend para garantir que o DB esteja pronto
+    command: /bin/sh -c "until nc -z -v -w30 db 3306; do echo 'Aguardando DB...'; sleep 2; done; npm start"
 
   db:
     image: mariadb:latest
@@ -24,6 +26,12 @@ services:
       MYSQL_DATABASE: salao_beleza
       MYSQL_USER: fatec
       MYSQL_PASSWORD: fatec
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 30s
+      retries: 5
+      start_period: 10s
+      timeout: 10s
 
   frontend:
     build:
