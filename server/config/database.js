@@ -9,7 +9,6 @@ let dbConfig;
 console.log(process.env.SETDB);
 
 if (process.env.SETDB === 'MYSQL') {
-
   dbConfig = {
     host: process.env.DB_MSQL_HOST,
     user: process.env.DB_MSQL_USER,
@@ -26,11 +25,12 @@ if (process.env.SETDB === 'MYSQL') {
   };
 } else if (process.env.SETDB === 'MARIADB') {
   dbConfig = {
-    host: process.env.DB_HOST || 'localhost',
-    user: process.env.DB_USER || 'fatec',
-    password: process.env.DB_PASSWORD || 'fatec',
-    database: process.env.DB_NAME || 'salao_beleza',
+    host: process.env.DB_MDB_HOST,
+    user: process.env.DB_MDB_USER,
+    password: process.env.DB_MDB_PASSWORD,
+    database: process.env.DB_MDB_NAME,
     dialect: 'mariadb',
+    port: process.env.DB_MDB_PORT,
     logging: false,
     pool: {
       max: 5,
@@ -42,14 +42,21 @@ if (process.env.SETDB === 'MYSQL') {
 } else {
   // Configuração padrão para MariaDB Local
   dbConfig = {
-    host: process.env.DB_LOCAL_HOST || 'localhost',
-    user: process.env.DB_LOCAL_USER || 'root',
-    password: process.env.DB_LOCAL_PASSWORD || 'localpassword',
-    database: process.env.DB_LOCAL_NAME || 'redes_local',
+    host: process.env.DB_LOCAL_HOST,
+    user: process.env.DB_LOCAL_USER,
+    password: process.env.DB_LOCAL_PASSWORD,
+    database: process.env.DB_LOCAL_NAME,
     dialect: 'mariadb',
-    port: process.env.PORT_LOCAL || 3306,
+    pool: {
+      max: 5,
+      min: 0,
+      acquire: 30000,
+      idle: 10000,
+    },
+    port: process.env.PORT_LOCAL,
     dialectOptions: {
       allowPublicKeyRetrieval: true,
+      connectTimeout: parseInt(process.env.DB_LOCAL_CONNECTTIMEOUT || 10000),
     },
   };
 }
@@ -57,6 +64,7 @@ if (process.env.SETDB === 'MYSQL') {
 // Função para garantir que o banco de dados exista
 async function ensureDatabaseExists() {
   let connection;
+  console.log(dbConfig);
 
   try {
     if (dbConfig.dialect === 'mariadb') {
@@ -96,6 +104,7 @@ async function ensureDatabaseExists() {
       });
 
     if (!rows || rows.length === 0) {
+      // Criação do banco de dados caso não exista
       const createDBQuery = `CREATE DATABASE ${dbConfig.database}`;
       if (dbConfig.dialect === 'mariadb') {
         await connection.query(createDBQuery);
@@ -110,16 +119,33 @@ async function ensureDatabaseExists() {
       console.log(`Banco de dados "${dbConfig.database}" criado com sucesso.`);
     } else {
       console.log(`Banco de dados "${dbConfig.database}" já existe.`);
-      const dropDBQuery = `DROP DATABASE ${dbConfig.database}`;
-      if (dbConfig.dialect === 'mariadb') {
-        await connection.query(dropDBQuery);
-        console.log(`Banco de dados "${dbConfig.database}" DELETADO.`);
-      }
 
-      const createDBQuery = `CREATE DATABASE ${dbConfig.database}`;
-      if (dbConfig.dialect === 'mariadb') {
-        await connection.query(createDBQuery);
-        console.log(`Banco de dados "${dbConfig.database}" RECRIADO.`);
+      // Verificação da variável de ambiente para recriar o banco
+      if (process.env.DROP_AND_RECREATE === 'true') {
+        const dropDBQuery = `DROP DATABASE ${dbConfig.database}`;
+        const createDBQuery = `CREATE DATABASE ${dbConfig.database}`;
+
+        if (dbConfig.dialect === 'mariadb') {
+          await connection.query(dropDBQuery);
+          console.log(`Banco de dados "${dbConfig.database}" deletado.`);
+          await connection.query(createDBQuery);
+          console.log(`Banco de dados "${dbConfig.database}" recriado.`);
+        } else {
+          await new Promise((resolve, reject) => {
+            connection.query(dropDBQuery, (error) => {
+              if (error) reject(error);
+              else resolve();
+            });
+          });
+          console.log(`Banco de dados "${dbConfig.database}" deletado.`);
+          await new Promise((resolve, reject) => {
+            connection.query(createDBQuery, (error) => {
+              if (error) reject(error);
+              else resolve();
+            });
+          });
+          console.log(`Banco de dados "${dbConfig.database}" recriado.`);
+        }
       }
     }
   } catch (error) {
@@ -142,10 +168,10 @@ const sequelize = new Sequelize(dbConfig.database, dbConfig.user, dbConfig.passw
   dialect: dbConfig.dialect,
   logging: false,
   pool: {
-    max: 5,
-    min: 0,
-    acquire: 30000,
-    idle: 10000,
+    max: 5,           // Número máximo de conexões simultâneas
+    min: 0,           // Número mínimo de conexões
+    acquire: 30000,   // Tempo máximo (ms) para tentar uma conexão antes de lançar erro
+    idle: 10000,      // Tempo (ms) que a conexão pode ficar ociosa antes de ser encerrada
   },
   dialectOptions: dbConfig.dialectOptions,
 });
