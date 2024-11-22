@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+  # Backend
   backend:
     build:
       context: .
@@ -14,9 +15,9 @@ services:
       DB_NAME: salao_beleza
     depends_on:
       - db
-    # Adiciona uma espera no serviço backend para garantir que o DB esteja pronto
     command: /bin/sh -c "until nc -z -v -w30 db 3306; do echo 'Aguardando DB...'; sleep 2; done; npm start"
 
+  # Banco de dados MariaDB
   db:
     image: mariadb:latest
     ports:
@@ -33,11 +34,14 @@ services:
       start_period: 10s
       timeout: 10s
 
+  # Frontend Server 1
   frontend-server1:
     build:
       context: ../../5S_REDES_FRONTEND/frontend
     ports:
-      - "8001:8001"
+      - "8001:8001"  
+    volumes:
+      - ./nginx/nginx-server1.conf:/etc/nginx/nginx.conf  
     depends_on:
       - backend
     environment:
@@ -46,24 +50,30 @@ services:
       VITE_FRONTEND_PORT: 8001
     command: /bin/sh -c "until nc -z -v -w30 backend 3000; do echo 'Aguardando Backend...'; sleep 2; done; npm run dev --mode server1"
 
+  # Frontend Server 2
   frontend-server2:
     build:
       context: ../../5S_REDES_FRONTEND/frontend
     ports:
-      - "8002:8002"
+      - "8002:8002"  
+    volumes:
+      - ./nginx/nginx-server2.conf:/etc/nginx/nginx.conf  
     depends_on:
       - backend
     environment:
       VITE_BASE_URL: http://localhost:3000/api
       VITE_BASE_PATH_FRONTEND: http://localhost:8002
-      VITE_FRONTEND_PORT: 8002 
+      VITE_FRONTEND_PORT: 8002
     command: /bin/sh -c "until nc -z -v -w30 backend 3000; do echo 'Aguardando Backend...'; sleep 2; done; npm run dev --mode server2"
 
+  # Frontend Server 3
   frontend-server3:
     build:
       context: ../../5S_REDES_FRONTEND/frontend
     ports:
-      - "8003:8003"
+      - "8003:8003"  
+    volumes:
+      - ./nginx/nginx-server3.conf:/etc/nginx/nginx.conf  
     depends_on:
       - backend
     environment:
