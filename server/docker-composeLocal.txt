@@ -9,11 +9,30 @@ services:
       - "3000:3000"
     environment:
       NODE_ENV: development
-      DB_HOST: rds-db.cjsv8t7ejq4d.us-east-1.rds.amazonaws.com 
+      DB_HOST: db  # SERVIÇO DB
       DB_USER: fatec
       DB_PASSWORD: fatec
       DB_NAME: salao_beleza
-    command: /bin/sh -c "until nc -z -v -w30 rds-db.cjsv8t7ejq4d.us-east-1.rds.amazonaws.com 3306; do echo 'Aguardando DB...'; sleep 2; done; npm start"
+    depends_on:
+      - db
+    command: /bin/sh -c "until nc -z -v -w30 db 3306; do echo 'Aguardando DB...'; sleep 2; done; npm start"
+
+  # Banco de dados MariaDB
+  db:
+    image: mariadb:latest
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: fatec
+      MYSQL_DATABASE: salao_beleza
+      MYSQL_USER: fatec
+      MYSQL_PASSWORD: fatec
+    healthcheck:
+      test: ["CMD", "mariadb-admin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 30s
+      retries: 5
+      start_period: 10s
+      timeout: 10s
 
   # Frontend Server 1
   frontend-server1:
@@ -27,10 +46,11 @@ services:
       - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server1.conf:/etc/nginx/nginx.conf  
     depends_on:
       - backend
+      - db
     environment:
       VITE_BASE_URL: http://localhost:3000/api
       VITE_BASE_PATH_FRONTEND: http://localhost:8001
-    command: /bin/sh -c "until nc -z -v -w30 rds-db.cjsv8t7ejq4d.us-east-1.rds.amazonaws.com 3306; do echo 'Aguardando DB...'; sleep 2; done; until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; nginx -g 'daemon off;'"
+    command: /bin/sh -c "until nc -z -v -w30 db 3306; do echo 'Aguardando DB...'; sleep 2; done; until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; nginx -g 'daemon off;'"
 
   # Frontend Server 2
   frontend-server2:
@@ -44,10 +64,11 @@ services:
       - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server2.conf:/etc/nginx/nginx.conf  
     depends_on:
       - backend
+      - db
     environment:
       VITE_BASE_URL: http://localhost:3000/api
       VITE_BASE_PATH_FRONTEND: http://localhost:8002
-    command: /bin/sh -c "until nc -z -v -w30 rds-db.cjsv8t7ejq4d.us-east-1.rds.amazonaws.com 3306; do echo 'Aguardando DB...'; sleep 2; done; until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; nginx -g 'daemon off;'"
+    command: /bin/sh -c "until nc -z -v -w30 db 3306; do echo 'Aguardando DB...'; sleep 2; done; until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; nginx -g 'daemon off;'"
 
   # Frontend Server 3
   frontend-server3:
@@ -61,7 +82,8 @@ services:
       - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server3.conf:/etc/nginx/nginx.conf  
     depends_on:
       - backend
+      - db
     environment:
       VITE_BASE_URL: http://localhost:3000/api
       VITE_BASE_PATH_FRONTEND_SERVER3: http://localhost:8003
-    command: /bin/sh -c "until nc -z -v -w30 rds-db.cjsv8t7ejq4d.us-east-1.rds.amazonaws.com 3306; do echo 'Aguardando DB...'; sleep 2; done; until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; nginx -g 'daemon off;'"
+    command: /bin/sh -c "until nc -z -v -w30 db 3306; do echo 'Aguardando DB...'; sleep 2; done; until curl -s http://backend:3000/api/health; do echo 'Aguardando Backend...'; sleep 2; done; nginx -g 'daemon off;'"
