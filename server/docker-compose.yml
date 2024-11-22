@@ -41,7 +41,7 @@ services:
       args:
         VITE_FRONTEND_PORT: 8001  # Passa a variável de ambiente para o build
     ports:
-      - "8001:80"  # Mapeia a porta 80 do contêiner para a porta 8001 do host
+      - "8001:8001"  # Mapeia a porta 80 do contêiner para a porta 8001 do host
     volumes:
       - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server1.conf:/etc/nginx/nginx.conf  
     depends_on:
@@ -59,7 +59,7 @@ services:
       args:
         VITE_FRONTEND_PORT: 8002  # Passa a variável de ambiente para o build
     ports:
-      - "8002:80"  # Mapeia a porta 80 do contêiner para a porta 8002 do host
+      - "8002:8002"  # Mapeia a porta 80 do contêiner para a porta 8002 do host
     volumes:
       - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server2.conf:/etc/nginx/nginx.conf  
     depends_on:
@@ -77,7 +77,7 @@ services:
       args:
         VITE_FRONTEND_PORT: 8003  # Passa a variável de ambiente para o build
     ports:
-      - "8003:80"  # Mapeia a porta 80 do contêiner para a porta 8003 do host
+      - "8003:8003"  # Mapeia a porta 80 do contêiner para a porta 8003 do host
     volumes:
       - ../../5S_REDES_FRONTEND/frontend/nginx/nginx-server3.conf:/etc/nginx/nginx.conf  
     depends_on:
