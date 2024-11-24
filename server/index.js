@@ -19,10 +19,17 @@ const lgpdRoutes = require('./routes/lgpdRoutes');
 const app = express();
 app.use(express.json());
 app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  credentials: true
+  origin: (origin, callback) => {
+    // Permitir origens permitidas ou sem origem (caso de ferramentas locais como Postman)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Origin não permitida pelo CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'], // Cabeçalhos permitidos
+  credentials: true, // Permitir envio de cookies e credenciais, se necessário
 }));
 
 
