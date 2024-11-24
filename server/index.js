@@ -20,7 +20,11 @@ const app = express();
 app.use(express.json());
 app.use(cors({
   origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true
 }));
+
 
 // Rota de saúde para monitoramento
 app.get('/api/health', (req, res) => {
