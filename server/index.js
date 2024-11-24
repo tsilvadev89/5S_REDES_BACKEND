@@ -18,12 +18,22 @@ const lgpdRoutes = require('./routes/lgpdRoutes');
 
 const app = express();
 app.use(express.json());
+
+// Configuração do CORS
+const allowedOrigins = [
+  'http://localhost:3000', // Localhost
+  'http://3.215.171.25:8001', // IP 8001
+  'http://3.215.171.25:8002', // IP 8002
+  'http://3.215.171.25:8003', // IP 8003
+];
+
 app.use(cors({
   origin: (origin, callback) => {
-    // Permitir origens permitidas ou sem origem (caso de ferramentas locais como Postman)
+    console.log(`Origin recebida: ${origin}`); // Log da origem recebida
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.log(`Origin não permitida: ${origin}`);
       callback(new Error('Origin não permitida pelo CORS'));
     }
   },
@@ -32,6 +42,15 @@ app.use(cors({
   credentials: true, // Permitir envio de cookies e credenciais, se necessário
 }));
 
+// Middleware para logging de requisições
+app.use((req, res, next) => {
+  console.log(`Requisição recebida:`);
+  console.log(`- Método: ${req.method}`);
+  console.log(`- URL: ${req.url}`);
+  console.log(`- Origem: ${req.headers.origin}`);
+  console.log(`- Headers:`, req.headers);
+  next();
+});
 
 // Rota de saúde para monitoramento
 app.get('/api/health', (req, res) => {
@@ -55,12 +74,12 @@ async function initializeApp() {
     app.use('/api/servicos', servicoRoutes);
     app.use('/api/auth', authRoutes);
     app.use('/api/lgpd', lgpdRoutes);
-    
 
+    // Log para requisições não encontradas
     app.use((req, res) => {
+      console.log(`Rota não encontrada: ${req.url}`);
       res.status(404).json({ message: 'Rota não encontrada' });
     });
-    
 
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {
