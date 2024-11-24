@@ -29,25 +29,27 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    console.log(`Origin recebida: ${origin}`); // Log da origem recebida
+    console.log(`Origin recebida: ${origin}`);
     if (!origin || allowedOrigins.includes(origin)) {
+      // Permitir requisições sem origem ou de origens confiáveis
       callback(null, true);
     } else {
       console.log(`Origin não permitida: ${origin}`);
       callback(new Error('Origin não permitida pelo CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'], // Cabeçalhos permitidos
-  credentials: true, // Permitir envio de cookies e credenciais, se necessário
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true,
 }));
 
-// Middleware para logging de requisições
+
 app.use((req, res, next) => {
   console.log(`Requisição recebida:`);
   console.log(`- Método: ${req.method}`);
   console.log(`- URL: ${req.url}`);
-  console.log(`- Origem: ${req.headers.origin}`);
+  console.log(`- Origem: ${req.headers.origin || 'Sem origem (provavelmente requisição local)'}`);
+  console.log(`- User-Agent: ${req.headers['user-agent']}`);
   console.log(`- Headers:`, req.headers);
   next();
 });
