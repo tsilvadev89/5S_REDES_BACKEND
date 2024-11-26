@@ -20,30 +20,17 @@ const app = express();
 app.use(express.json());
 
 // Configuração do CORS
-const allowedOrigins = [
-  'http://localhost:3000', // Localhost
-  'http://3.215.171.25:8001', // IP 8001
-  'http://3.215.171.25:8002', // IP 8002
-  'http://3.215.171.25:8003', // IP 8003
-];
-
 app.use(cors({
-  origin: (origin, callback) => {
-    console.log(`Origin recebida: ${origin}`);
-    if (!origin || allowedOrigins.includes(origin)) {
-      // Permitir requisições sem origem ou de origens confiáveis
-      callback(null, true);
-    } else {
-      console.log(`Origin não permitida: ${origin}`);
-      callback(new Error('Origin não permitida pelo CORS'));
-    }
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
-  credentials: true,
+  origin: '*', // Permitir requisições de qualquer origem
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Métodos permitidos
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'], // Cabeçalhos permitidos
+  credentials: true, // Permitir envio de cookies e credenciais
 }));
 
+// Adicionar suporte explícito para OPTIONS
+app.options('*', cors()); // Responder a preflight requests automaticamente
 
+// Middleware de logging para depuração
 app.use((req, res, next) => {
   console.log(`Requisição recebida:`);
   console.log(`- Método: ${req.method}`);
